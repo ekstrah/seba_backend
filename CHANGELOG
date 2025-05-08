@@ -17,7 +17,17 @@ All notable changes to this project will be documented in this file.
 ## [0.1.2] - 2025-05-07
 ### Added
 - Reset Password Sucess Email
-- Checking Reset Token FUnction
+- Checking Reset Token Function
+
+### Changed
+
+
+### Fixed
+
+
+## [0.1.3] - 2025-05-08
+### Added
+- Auth Check for loggied only
 
 ### Changed
 
