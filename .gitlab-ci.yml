@@ -18,7 +18,7 @@
 
 stages:          # List of stages for jobs, and their order of execution
   - build
-#   - test
+  - test
   - deploy
 
 build-job:       # This job runs in the build stage, which runs first.
@@ -34,12 +34,14 @@ build-job:       # This job runs in the build stage, which runs first.
 #     - sleep 60
 #     - echo "Code coverage is 90%"
 
-# lint-test-job:   # This job also runs in the test stage.
-#   stage: test    # It can run at the same time as unit-test-job (in parallel).
-#   script:
-#     - echo "Linting code... This will take about 10 seconds."
-#     - sleep 10
-#     - echo "No lint issues found."
+lint-test-job:
+  stage: test
+  image: node:20 # or whichever Node version you're using
+  before_script:
+    - npm ci  # faster and more reliable than npm install
+  script:
+    - echo "Running ESLint..."
+    - npx eslint . --max-warnings=0
 
 deploy-job:      # This job runs in the deploy stage.
   stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.

@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.1] - 2025-05-04
 ### Added
-- Login Endpoint
-- Reset Password Endpoint
-- Unit testing is added
+- Login Endpoint (DHK)
+- Reset Password Endpoint (DHK)
+- Unit testing is added (DHK)
 
 ### Changed
 
@@ -16,8 +16,8 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.2] - 2025-05-07
 ### Added
-- Reset Password Sucess Email
-- Checking Reset Token Function
+- Reset Password Sucess Email (DHK)
+- Checking Reset Token Function (DHK)
 
 ### Changed
 
@@ -27,7 +27,13 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.3] - 2025-05-08
 ### Added
-- Auth Check for loggied only
+- Auth Check for loggied only (DHK)
+- Lint Testing Added (DHK)
+- Gitlab CI / CD integrated (DHK)
+
+### Removed
+- Removed test for User Account Creation and Verification (DHK)
+
 
 ### Changed
 
