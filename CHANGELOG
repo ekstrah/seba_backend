@@ -39,3 +39,19 @@ All notable changes to this project will be documented in this file.
 
 
 ### Fixed
+
+## [0.1.3] - 2025-05-27
+### Added
+- Cateogry CRUD Implemented
+- Product Create Read Implemented
+
+### Removed
+- Removed test for User Account Creation and Verification (DHK)
+
+
+### Changed
+
+
+### Fixed
+
+
