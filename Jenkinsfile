@@ -45,8 +45,8 @@ pipeline {
                         cat > ~/.docker/config.json << EOF
                         {
                             "auths": {
-                                "${DOCKER_REGISTRY}": {
-                                    "auth": "$(echo -n "${DOCKER_USER}:${DOCKER_PASS}" | base64)"
+                                "\${DOCKER_REGISTRY}": {
+                                    "auth": "\$(echo -n "\${DOCKER_USER}:\${DOCKER_PASS}" | base64)"
                                 }
                             },
                             "insecure-registries": []
@@ -80,4 +80,4 @@ pipeline {
             echo "Failed to build or push Docker images"
         }
     }
-} 
+}
