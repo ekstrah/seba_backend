@@ -2,14 +2,16 @@ import bcryptjs from 'bcryptjs';
 import crypto from "crypto";
 
 import { User } from "../models/user.model.js";
+import { Consumer } from "../models/consumer.model.js";
+import { Farmer } from "../models/farmer.model.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js"
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendResetSucessEmail } from "../mailtrap/emails.js";
 
 export const signup = async (req, res) => {
-	const { email, password, name } = req.body;
+	const { email, password, name, phone, role } = req.body;
 
 	try {
-		if (!email || !password || !name) {
+		if (!email || !password || !name || !phone || !role) {
 			throw new Error("All fields are required");
 		}
 
@@ -23,13 +25,41 @@ export const signup = async (req, res) => {
 		const hashedPassword = await bcryptjs.hash(password, 10);
 		const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
-		const user = new User({
-			email,
-			password: hashedPassword,
-			name,
-			verificationToken,
-			verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-		});
+		let user;
+		
+		// Create user based on role
+		if (role === 'consumer') {
+			user = new Consumer({
+				email,
+				password: hashedPassword,
+				name,
+				phone,
+				role,
+				verificationToken,
+				verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+			});
+		} else if (role === 'farmer') {
+			const { farmName, introduction, farmLocation } = req.body;
+			
+			if (!farmName || !introduction || !farmLocation) {
+				throw new Error("Farm details are required for farmer registration");
+			}
+
+			user = new Farmer({
+				email,
+				password: hashedPassword,
+				name,
+				phone,
+				role,
+				farmName,
+				introduction,
+				farmLocation,
+				verificationToken,
+				verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+			});
+		} else {
+			throw new Error("Invalid role");
+		}
 
 		await user.save();
 
@@ -40,7 +70,7 @@ export const signup = async (req, res) => {
 
 		res.status(201).json({
 			success: true,
-			message: "User created successfully",
+			message: `${role.charAt(0).toUpperCase() + role.slice(1)} created successfully`,
 			user: {
 				...user._doc,
 				password: undefined,

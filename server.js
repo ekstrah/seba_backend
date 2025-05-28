@@ -13,6 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 app.use(express.json()); // allows us to parse incoming requests:req.body
 app.use(cookieParser());
+
 app.use("/api/auth", authRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/product", productRoutes);

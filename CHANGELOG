@@ -58,12 +58,15 @@ All notable changes to this project will be documented in this file.
 ## [0.1.5] - 2025-05-28
 ### Added
 - Product GetAll and Find Implemented
+- Added Farmer Model and Review Model
+- Integrated User Model with Consumer and Farmer Model (inheritance)
 
 ### Removed
 
 
 ### Changed
 - Added Category CRUD Implementation with Validaiton Check with product
+- Modified User Model to add role and phone number
 
 
 ### Fixed
