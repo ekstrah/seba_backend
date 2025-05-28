@@ -23,7 +23,7 @@ pipeline {
             steps {
                 // Build Docker image with latest and random tag
                 sh """
-                    docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest \
+                    docker build --no-cache -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest \
                                 -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${RANDOM_TAG} .
                 """
             }
@@ -38,7 +38,23 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh """
-                        echo ${DOCKER_PASS} | docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} --password-stdin
+                        # Create Docker config directory if it doesn't exist
+                        mkdir -p ~/.docker
+                        
+                        # Configure Docker to trust the registry's certificate
+                        echo '{
+                            "auths": {
+                                "${DOCKER_REGISTRY}": {
+                                    "auth": "$(echo -n "${DOCKER_USER}:${DOCKER_PASS}" | base64)"
+                                }
+                            },
+                            "insecure-registries": []
+                        }' > ~/.docker/config.json
+                        
+                        # Login to registry
+                        docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASS}
+                        
+                        # Push images
                         docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
                         docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${RANDOM_TAG}
                     """
@@ -51,6 +67,7 @@ pipeline {
         always {
             // Cleanup
             sh 'docker logout ${DOCKER_REGISTRY}'
+            sh 'rm -f ~/.docker/config.json'
         }
         success {
             echo "Successfully built and pushed images:"
