@@ -6,6 +6,7 @@ pipeline {
         DOCKER_IMAGE = 'seba-backend'
         DOCKER_CREDENTIALS_ID = 'docker-registry-credentials'
         DOCKER_HOST = 'unix:///var/run/docker.sock'
+        DOCKER_TLS_VERIFY = '0'
         DOCKER_TLS_CERTDIR = ''
     }
 
@@ -17,6 +18,7 @@ pipeline {
                     whoami
                     id
                     echo "DOCKER_HOST: \$DOCKER_HOST"
+                    echo "DOCKER_TLS_VERIFY: \$DOCKER_TLS_VERIFY"
                     echo "DOCKER_TLS_CERTDIR: \$DOCKER_TLS_CERTDIR"
                     
                     echo "=== Docker Socket Check ==="
@@ -73,7 +75,7 @@ pipeline {
                                     "auth": "$(echo -n "${DOCKER_USER}:${DOCKER_PASS}" | base64)"
                                 }
                             },
-                            "insecure-registries": []
+                            "insecure-registries": ["''' + DOCKER_REGISTRY + '''"]
                         }
                         EOF
                         
