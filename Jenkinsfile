@@ -42,14 +42,16 @@ pipeline {
                         mkdir -p ~/.docker
                         
                         # Configure Docker to trust the registry's certificate
-                        echo '{
+                        cat > ~/.docker/config.json << EOF
+                        {
                             "auths": {
                                 "${DOCKER_REGISTRY}": {
                                     "auth": "$(echo -n "${DOCKER_USER}:${DOCKER_PASS}" | base64)"
                                 }
                             },
                             "insecure-registries": []
-                        }' > ~/.docker/config.json
+                        }
+                        EOF
                         
                         # Login to registry
                         docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASS}
