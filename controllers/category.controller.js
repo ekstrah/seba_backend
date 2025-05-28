@@ -1,4 +1,5 @@
 import { Category } from "../models/category.model.js";
+import { Product } from "../models/product.model.js";
 
 export const oCreate = async (req, res) => {
     const { name, description } = req.body;
@@ -30,32 +31,52 @@ export const oCreate = async (req, res) => {
     }
 };
 export const oDelete = async (req, res) => {
-    const { name } = req.body;
     try {
+        const { name } = req.query;
+
         if (!name) {
-            throw new Error("Name fields are required");
+            return res.status(400).json({
+                success: false,
+                message: "Category name is required"
+            });
         }
 
-        const categoryAlreadyExists = await Category.findOne({ name });
-        if (!categoryAlreadyExists) {
-            return res.status(400).json({ sucess: false, messsage: "Category doen'st exists" });
+        const category = await Category.findOne({ name });
+
+        if (!category) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Category not found" 
+            });
         }
-        const category = new Category({
-            name
-        });
-        await category.deleteOne();
+
+        // Check if any products are using this category
+        const products = await Product.find({ category: category._id });
+        
+        if (products.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Cannot delete category. There are products associated with it.",
+                products: products.map(p => p.name)
+            });
+        }
+
+        await Category.deleteOne({ _id: category._id });
+
         res.status(200).json({
             success: true,
-            message: "Categry deleted successfully",
-            category: {
-                ...category._doc,
-            },
+            message: "Category deleted successfully",
+            category
         });
-    } catch {
-        console.log("error in oDelete Category ", error);
-        res.status(500).json({ success: false, message: "Server error" });
+    } catch (error) {
+        console.error("Error deleting category:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Server error" 
+        });
     }
 };
+
 
 export const oReadAll = async (req, res) => {
     try {

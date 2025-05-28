@@ -50,3 +50,47 @@ export const oGetAll = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 }
+
+export const oFind = async (req, res) => {
+    const { name, minPrice, maxPrice, isAvailable, certType, farmingMethod, category, page=1, limit=10} = req.query;
+    const query = {};
+    if (name) {
+        query.name = { $regex: name, $options: 'i'};
+    }
+    if (category) {
+        query.category = category;
+    }
+    if (isAvailable) {
+        query.isAvailable = isAvailable;
+    }
+    if (certType) {
+        query.certType = certType;
+    }
+    if (farmingMethod) {
+        query.farmingMethod = farmingMethod
+    }
+    if (minPrice || maxPrice) {
+        query.price = {};
+        if (minPrice) query.price.$gte = Number(minPrice);
+        if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+    try {
+        
+        const skip = (page - 1) * limit;
+
+        const products = await Product.find(query).skip(Number(skip)).limit(Number(limit));
+        const total = await Product.countDocuments(query);
+
+        res.status(200).json({
+            success: true,
+            message: "Product List read successfully",
+            products: {
+                products,
+                total
+            },
+        });
+    } catch {
+        console.log("error in find Product ", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+}
