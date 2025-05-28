@@ -5,9 +5,10 @@ pipeline {
         DOCKER_REGISTRY = 'registry.ailaplacelab.com'
         DOCKER_IMAGE = 'seba-backend'
         DOCKER_CREDENTIALS_ID = 'docker-registry-credentials'
-        DOCKER_HOST = 'unix:///var/run/docker.sock'
-        DOCKER_TLS_VERIFY = '0'
-        DOCKER_TLS_CERTDIR = ''
+        DOCKER_HOST = 'tcp://docker:2376'
+        DOCKER_TLS_VERIFY = '1'
+        DOCKER_TLS_CERTDIR = '/certs'
+        DOCKER_CERT_PATH = '/certs/client'
     }
 
     stages {
@@ -20,9 +21,10 @@ pipeline {
                     echo "DOCKER_HOST: \$DOCKER_HOST"
                     echo "DOCKER_TLS_VERIFY: \$DOCKER_TLS_VERIFY"
                     echo "DOCKER_TLS_CERTDIR: \$DOCKER_TLS_CERTDIR"
+                    echo "DOCKER_CERT_PATH: \$DOCKER_CERT_PATH"
                     
                     echo "=== Docker Socket Check ==="
-                    ls -la /var/run/docker.sock || echo "Docker socket not found"
+                    ls -la /certs/client || echo "Docker certs not found"
                     
                     echo "=== Docker Info ==="
                     docker info || echo "Docker info failed"

@@ -73,5 +73,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+### Todo 
+- Jenkins Pipeline for Docker Build and Push to Docker Registry (Fix)
 
 
