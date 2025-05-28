@@ -60,6 +60,8 @@ All notable changes to this project will be documented in this file.
 - Product GetAll and Find Implemented
 - Added Farmer Model and Review Model
 - Integrated User Model with Consumer and Farmer Model (inheritance)
+- git.ailaplacelab.com remote repository added
+- jenkins pipeline added
 
 ### Removed
 
