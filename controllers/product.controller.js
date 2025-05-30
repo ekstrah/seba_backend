@@ -94,3 +94,31 @@ export const oFind = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 }
+
+export const oDeleteByName = async (req, res) => {
+    console.log("hi");
+    const { name } = req.params;
+    
+    try {
+        const product = await Product.findOneAndDelete({ name: name });
+        
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Product deleted successfully",
+            product
+        });
+    } catch (error) {
+        console.log("Error in oDeleteByName:", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error"
+        });
+    }
+}
