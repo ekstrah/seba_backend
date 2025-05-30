@@ -7,6 +7,8 @@ import { connectDB } from "./db/connectDB.js";
 import authRoutes from "./routes/auth.route.js";
 import categoryRoutes from "./routes/category.route.js";
 import productRoutes from "./routes/product.route.js";
+import orderRoutes from "./routes/order.route.js";
+import cartRoutes from "./routes/cart.routes.js";
 
 dotenv.config();
 const app = express();
@@ -17,6 +19,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/product", productRoutes);
+app.use("/api/order-item", orderRoutes);
+app.use("/api/cart", cartRoutes);
 
 export default app;
 if (process.env.NODE_ENV !== "test") {
