@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser"
 
 import { connectDB } from "./db/connectDB.js";
+import { initializeTestAccounts } from "./utils/testAccounts.js";
 
 import authRoutes from "./routes/auth.route.js";
 import categoryRoutes from "./routes/category.route.js";
@@ -24,8 +25,10 @@ app.use("/api/cart", cartRoutes);
 
 export default app;
 if (process.env.NODE_ENV !== "test") {
-  app.listen(PORT, () => {
-    connectDB();
+  app.listen(PORT, async () => {
+    await connectDB();
+    // Initialize test accounts after database connection
+    await initializeTestAccounts();
     console.log(`Server started at 0.0.0.0:${PORT}`);
   });
 }

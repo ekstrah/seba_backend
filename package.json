@@ -4,6 +4,9 @@
   "main": "server.js",
   "scripts": {
     "test": "NODE_ENV=test npx jest",
+    "test:api": "newman run ./tests/postman/FresichFarm.postman_collection.json",
+    "test:api:watch": "newman run ./tests/postman/FresichFarm.postman_collection.json --watch",
+    "test:all": "npm run test && npm run test:api",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "lint": "eslint ."
@@ -22,6 +25,7 @@
     "jsonwebtoken": "^9.0.2",
     "mailtrap": "^4.1.0",
     "mongoose": "^8.14.1",
+    "newman": "^6.2.1",
     "nodemon": "^3.1.10"
   },
   "devDependencies": {
