@@ -2,92 +2,53 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_REGISTRY = 'registry.ailaplacelab.com'
-        DOCKER_IMAGE = 'seba-backend'
-        DOCKER_CREDENTIALS_ID = 'docker-registry-credentials'
-        DOCKER_HOST = 'tcp://docker:2376'
-        DOCKER_TLS_VERIFY = '1'
-        DOCKER_TLS_CERTDIR = '/certs'
-        DOCKER_CERT_PATH = '/certs/client'
+        REGISTRY_URL = "registry.ailaplacelab.com"
+        IMAGE_NAME = "dongho/seba-backend"
+        LATEST_TAG = "latest"
+        RANDOM_TAG = "build-${UUID.randomUUID().toString().take(8)}"
     }
 
     stages {
-        stage('Debug') {
+        stage('Checkout') {
             steps {
-                sh """
-                    echo "=== Environment Check ==="
-                    whoami
-                    id
-                    echo "DOCKER_HOST: \$DOCKER_HOST"
-                    echo "DOCKER_TLS_VERIFY: \$DOCKER_TLS_VERIFY"
-                    echo "DOCKER_TLS_CERTDIR: \$DOCKER_TLS_CERTDIR"
-                    echo "DOCKER_CERT_PATH: \$DOCKER_CERT_PATH"
-                    
-                    echo "=== Docker Socket Check ==="
-                    ls -la /certs/client || echo "Docker certs not found"
-                    
-                    echo "=== Docker Info ==="
-                    docker info || echo "Docker info failed"
-                """
+                checkout scm
             }
         }
 
-        stage('Prepare') {
+        stage('Build Docker Image (dev)') {
             steps {
-                // Generate structured tag with timestamp and build number
                 script {
-                    def timestamp = new Date().format('yyyyMMdd-HHmmss')
-                    def buildNumber = env.BUILD_NUMBER ?: '1'
-                    env.RANDOM_TAG = "build-${buildNumber}-${timestamp}"
+                    def fullLatest = "${REGISTRY_URL}/${IMAGE_NAME}:${LATEST_TAG}"
+                    def fullRandom = "${REGISTRY_URL}/${IMAGE_NAME}:${RANDOM_TAG}"
+
+                    echo "Building image with tags: ${fullLatest}, ${fullRandom}"
+
+                    dockerImage = docker.build(
+                        fullLatest,
+                        "-f docker/dev.Dockerfile ."
+                    )
+
+                    // Tag image with random tag
+                    sh "docker tag ${fullLatest} ${fullRandom}"
                 }
             }
         }
 
-        stage('Build') {
+        stage('Push to Private Registry') {
             steps {
-                // Build Docker image with latest and random tag
-                sh """
-                    # Check Docker daemon connection
-                    docker version
-                    
-                    # Build Docker image with latest and random tag
-                    DOCKER_BUILDKIT=1 docker build --no-cache -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest \
-                                -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${RANDOM_TAG} .
-                """
-            }
-        }
-
-        stage('Push') {
-            steps {
-                // Login to Docker registry
                 withCredentials([usernamePassword(
-                    credentialsId: DOCKER_CREDENTIALS_ID,
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
+                    credentialsId: 'ailaplacelab-creds',
+                    usernameVariable: 'REGISTRY_USER',
+                    passwordVariable: 'REGISTRY_PASS'
                 )]) {
-                    sh '''
-                        # Create Docker config directory if it doesn't exist
-                        mkdir -p ~/.docker
-                        
-                        # Configure Docker to trust the registry's certificate
-                        cat > ~/.docker/config.json << EOF
-                        {
-                            "auths": {
-                                "''' + DOCKER_REGISTRY + '''": {
-                                    "auth": "$(echo -n "${DOCKER_USER}:${DOCKER_PASS}" | base64)"
-                                }
-                            },
-                            "insecure-registries": ["''' + DOCKER_REGISTRY + '''"]
-                        }
-                        EOF
-                        
-                        # Login to registry
-                        docker login ''' + DOCKER_REGISTRY + ''' -u ${DOCKER_USER} -p ${DOCKER_PASS}
-                        
-                        # Push images
-                        docker push ''' + DOCKER_REGISTRY + '''/''' + DOCKER_IMAGE + ''':latest
-                        docker push ''' + DOCKER_REGISTRY + '''/''' + DOCKER_IMAGE + ''':''' + env.RANDOM_TAG + '''
-                    '''
+                    script {
+                        sh "echo $REGISTRY_PASS | docker login ${REGISTRY_URL} -u $REGISTRY_USER --password-stdin"
+
+                        sh "docker push ${REGISTRY_URL}/${IMAGE_NAME}:${LATEST_TAG}"
+                        sh "docker push ${REGISTRY_URL}/${IMAGE_NAME}:${RANDOM_TAG}"
+
+                        sh "docker logout ${REGISTRY_URL}"
+                    }
                 }
             }
         }
@@ -95,17 +56,8 @@ pipeline {
 
     post {
         always {
-            // Cleanup
-            sh "docker logout ${DOCKER_REGISTRY}"
-            sh 'rm -f ~/.docker/config.json'
-        }
-        success {
-            echo "Successfully built and pushed images:"
-            echo "Latest: ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest"
-            echo "Versioned: ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${RANDOM_TAG}"
-        }
-        failure {
-            echo "Failed to build or push Docker images"
+            echo 'Cleaning up local Docker images...'
+            sh "docker image prune -f"
         }
     }
 }

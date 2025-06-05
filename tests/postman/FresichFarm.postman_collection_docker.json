@@ -574,7 +574,7 @@
 		},
 		{
 			"key": "base_url",
-			"value": "http://localhost:8080"
+			"value": "http://host.docker.internal:8080"
 		}
 	]
 }

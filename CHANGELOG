@@ -97,3 +97,16 @@ All notable changes to this project will be documented in this file.
 ### Todo 
 
 
+## [0.1.6] - 2025-06-04
+### Added
+
+### Removed
+
+### Changed
+- Modified Dockerfile
+- MongoDB Atlas is used instead of Local
+
+### Fixed
+
+### Todo 
+
