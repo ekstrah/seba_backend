@@ -10,7 +10,7 @@ import categoryRoutes from "./routes/category.route.js";
 import productRoutes from "./routes/product.route.js";
 import orderRoutes from "./routes/order.route.js";
 import cartRoutes from "./routes/cart.routes.js";
-
+import reviewRoutes from "./routes/review.route.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -22,6 +22,7 @@ app.use("/api/category", categoryRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/order-item", orderRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/review", reviewRoutes);
 
 export default app;
 if (process.env.NODE_ENV !== "test") {

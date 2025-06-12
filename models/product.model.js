@@ -50,6 +50,22 @@ const productSchema = new mongoose.Schema(
             ref: "Category",
             required: true,
         },
+        reviews: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Review"
+        }],
+        rating: {
+            average: {
+                type: Number,
+                default: 0,
+                min: 0,
+                max: 5
+            },
+            count: {
+                type: Number,
+                default: 0
+            }
+        }
     },
     { timestamps: true }
 );

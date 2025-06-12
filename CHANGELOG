@@ -111,7 +111,7 @@ All notable changes to this project will be documented in this file.
 ### Todo 
 
 
-## [0.1.8] - 2025-06-012
+## [0.1.8] - 2025-06-12
 ### Added
 - Added Address Model for easier maintanence
 - Payment Method is implemented
@@ -131,3 +131,20 @@ All notable changes to this project will be documented in this file.
 - Make API Endpoint for everything that exists
 - Review Composition and association relationship
 
+
+
+## [0.1.9] - 2025-06-13
+
+### Added
+- Authentication Handling with both bearer and cookie based
+- Rating Calculator
+### Removed
+
+### Changed
+- GenerateTokenAndSetCookie modified to work with both bearer and cookie based
+
+### Fixed
+
+### Todo 
+- Make API Endpoint for everything that exists
+- Review Composition and association relationship

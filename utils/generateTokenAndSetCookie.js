@@ -5,6 +5,7 @@ export const generateTokenAndSetCookie = (res, userId) => {
         expiresIn: "7d",
     });
 
+    // Set cookie for web clients
     res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -12,5 +13,6 @@ export const generateTokenAndSetCookie = (res, userId) => {
         maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    // Return token for mobile/API clients
     return token;
 }
