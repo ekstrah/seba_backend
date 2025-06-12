@@ -110,3 +110,20 @@ All notable changes to this project will be documented in this file.
 
 ### Todo 
 
+
+## [0.1.6] - 2025-06-04
+### Added
+- Added Address Model for easier maintanence
+- Payment Method is implemented
+
+### Removed
+
+### Changed
+- Consumer and Farmer Initialization Account for testing has been modified to work well
+- Changed the testAccount.js to work with it
+- Updated Order and Consumer
+
+### Fixed
+
+### Todo 
+

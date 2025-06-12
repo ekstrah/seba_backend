@@ -1,7 +1,7 @@
 import bcryptjs from 'bcryptjs';
 import { Consumer } from '../models/consumer.model.js';
 import { Farmer } from '../models/farmer.model.js';
-import { User } from '../models/user.model.js';
+import { Address } from '../models/address.model.js';
 
 const TEST_ACCOUNTS = {
     consumer: {
@@ -9,28 +9,18 @@ const TEST_ACCOUNTS = {
         password: 'test123',
         name: 'Test Consumer',
         phone: '1234567890',
-        role: 'consumer',
         isVerified: true
     },
-    // farmer: {
-    //     email: 'testf@example.com',
-    //     password: 'test123',
-    //     name: 'Test Farmer',
-    //     phone: '1234567891',
-    //     role: 'farmer',
-    //     isVerified: true,
-    //     farmName: 'Test Farm',
-    //     introduction: 'This is a test farm',
-    //     farmLocation: 'Test Location'
-    // },
-    // admin: {
-    //     email: 'admin@example.com',
-    //     password: 'admin123',
-    //     name: 'Test Admin',
-    //     phone: '1234567892',
-    //     role: 'admin',
-    //     isVerified: true
-    // }
+    farmer: {
+        email: 'testf@example.com',
+        password: 'test123',
+        name: 'Test Farmer',
+        phone: '1234567891',
+        isVerified: true,
+        farmName: 'Test Farm',
+        introduction: 'This is a test farm with a detailed introduction that meets the minimum length requirement of 50 characters. We are committed to sustainable farming practices.',
+        farmingMethods: ['organic', 'natural']
+    },
 };
 
 export const initializeTestAccounts = async () => {
@@ -43,19 +33,63 @@ export const initializeTestAccounts = async () => {
                 ...TEST_ACCOUNTS.consumer,
                 password: hashedPassword
             });
-            console.log('Test consumer account created');
+
+            // Create a test delivery address for consumer
+            const deliveryAddress = await Address.create({
+                street: '123 Consumer St',
+                city: 'Consumer City',
+                state: 'CS',
+                zipCode: '12345',
+                addressType: 'home',
+                isDefault: true
+            });
+
+            // Add the address to consumer's delivery addresses
+            await consumer.addDeliveryAddress(deliveryAddress);
+
+            // Create a test payment method for consumer
+            const paymentMethod = await consumer.addPaymentMethod({
+                type: 'credit_card',
+                isDefault: true,
+                processor: 'stripe',
+                processorToken: 'tok_test_' + Math.random().toString(36).substring(7),
+                displayInfo: {
+                    lastFourDigits: '4242',
+                    cardType: 'visa',
+                    expiryMonth: 12,
+                    expiryYear: new Date().getFullYear() + 1
+                },
+                billingAddress: deliveryAddress._id
+            });
+
+            console.log('Test consumer account created with delivery address and payment method');
         }
 
         // Check and create farmer
-        // let farmer = await Farmer.findOne({ email: TEST_ACCOUNTS.farmer.email });
-        // if (!farmer) {
-        //     const hashedPassword = await bcryptjs.hash(TEST_ACCOUNTS.farmer.password, 10);
-        //     farmer = await Farmer.create({
-        //         ...TEST_ACCOUNTS.farmer,
-        //         password: hashedPassword
-        //     });
-        //     console.log('Test farmer account created');
-        // }
+        let farmer = await Farmer.findOne({ email: TEST_ACCOUNTS.farmer.email });
+        if (!farmer) {
+            const hashedPassword = await bcryptjs.hash(TEST_ACCOUNTS.farmer.password, 10);
+            
+            // Create farm location address first
+            const farmLocation = await Address.create({
+                street: '456 Farm Road',
+                city: 'Farmville',
+                state: 'FS',
+                zipCode: '67890',
+                addressType: 'farm',
+                coordinates: {
+                    latitude: 37.7749
+                }
+            });
+
+            farmer = await Farmer.create({
+                ...TEST_ACCOUNTS.farmer,
+                password: hashedPassword,
+                farmLocation: farmLocation._id
+            });
+
+            console.log('Test farmer account created with farm location');
+        }
 
         // Check and create admin
         // let admin = await User.findOne({ email: TEST_ACCOUNTS.admin.email });
@@ -69,8 +103,8 @@ export const initializeTestAccounts = async () => {
         // }
 
         return {
-            consumer
-            // farmer,
+            consumer,
+            farmer,
             // admin
         };
     } catch (error) {

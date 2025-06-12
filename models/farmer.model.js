@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { User } from "./user.model.js";
+import { Address } from "./address.model.js";
 
 const farmerSchema = new mongoose.Schema({
     farmName: {
@@ -14,50 +15,36 @@ const farmerSchema = new mongoose.Schema({
         minlength: 50,
         maxlength: 1000
     },
-    certifications: [{
-        type: {
-            type: String,
-            required: true,
-            enum: ['organic', 'natural', 'biodynamic', 'permaculture', 'fair-trade', 'rainforest-alliance']
-        },
-        issuer: {
-            type: String,
-            required: true
-        },
-        issueDate: {
-            type: Date,
-            required: true
-        },
-        expiryDate: {
-            type: Date,
-            required: true
-        },
-        certificateNumber: {
-            type: String,
-            required: true
-        }
-    }],
+    certifications: {
+        type: [{
+            type: {
+                type: String,
+                required: true,
+                enum: ['organic', 'natural', 'biodynamic', 'permaculture', 'fair-trade', 'rainforest-alliance']
+            },
+            issuer: {
+                type: String,
+                required: true
+            },
+            issueDate: {
+                type: Date,
+                required: true
+            },
+            expiryDate: {
+                type: Date,
+                required: true
+            },
+            certificateNumber: {
+                type: String,
+                required: true
+            }
+        }],
+        default: []
+    },
     farmLocation: {
-        address: {
-            type: String,
-            required: true
-        },
-        city: {
-            type: String,
-            required: true
-        },
-        state: {
-            type: String,
-            required: true
-        },
-        zipCode: {
-            type: String,
-            required: true
-        },
-        coordinates: {
-            latitude: Number,
-            longitude: Number
-        }
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Address',
+        required: true
     },
     farmingMethods: [{
         type: String,

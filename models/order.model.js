@@ -23,22 +23,9 @@ const orderSchema = new mongoose.Schema(
             default: 'pending',
         },
         shippingAddress: {
-            street: {
-                type: String,
-                required: true,
-            },
-            city: {
-                type: String,
-                required: true,
-            },
-            state: {
-                type: String,
-                required: true,
-            },
-            zipCode: {
-                type: String,
-                required: true,
-            },
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Address",
+            required: true,
         },
         paymentStatus: {
             type: String,
@@ -67,6 +54,29 @@ const orderSchema = new mongoose.Schema(
             paymentGatewayResponse: {
                 type: Map,
                 of: mongoose.Schema.Types.Mixed
+            },
+            // Store a snapshot of the payment method at time of order
+            paymentMethodSnapshot: {
+                type: {
+                    type: String,
+                    enum: ['credit_card', 'debit_card', 'bank_account'],
+                    required: true
+                },
+                processor: {
+                    type: String,
+                    enum: ['stripe', 'paypal', 'square'],
+                    required: true
+                },
+                processorToken: {
+                    type: String,
+                    required: true
+                },
+                displayInfo: {
+                    lastFourDigits: String,
+                    cardType: String,
+                    expiryMonth: Number,
+                    expiryYear: Number
+                }
             }
         },
         notes: {
@@ -82,5 +92,27 @@ orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ paymentMethod: 1 });
+
+// Pre-save middleware to capture payment method snapshot
+orderSchema.pre('save', async function(next) {
+    if (this.isModified('paymentMethod') && this.paymentMethod) {
+        const PaymentMethod = mongoose.model('PaymentMethod');
+        const paymentMethod = await PaymentMethod.findById(this.paymentMethod);
+        if (paymentMethod) {
+            this.paymentDetails.paymentMethodSnapshot = {
+                type: paymentMethod.type,
+                processor: paymentMethod.processor,
+                processorToken: paymentMethod.processorToken,
+                displayInfo: {
+                    lastFourDigits: paymentMethod.displayInfo.lastFourDigits,
+                    cardType: paymentMethod.displayInfo.cardType,
+                    expiryMonth: paymentMethod.displayInfo.expiryMonth,
+                    expiryYear: paymentMethod.displayInfo.expiryYear
+                }
+            };
+        }
+    }
+    next();
+});
 
 export const Order = mongoose.model("Order", orderSchema); 
