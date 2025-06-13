@@ -139,6 +139,8 @@ All notable changes to this project will be documented in this file.
 - Authentication Handling with both bearer and cookie based (DHK)
 - Rating Calculator
 - auth.middlware added
+- Cart Item Controller is fully working now
+
 ### Removed
 
 ### Changed
