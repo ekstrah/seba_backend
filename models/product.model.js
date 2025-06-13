@@ -31,11 +31,11 @@ const productSchema = new mongoose.Schema(
         },
         harvestDate: {
             type: Date,
-            default: false,
+            default: null,
         },
         expiryDate: {
             type: Date,
-            default: false,
+            default: null,
         },
         certType: {
             type: String,

@@ -137,9 +137,12 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Authentication Handling with both bearer and cookie based (DHK)
-- Rating Calculator
-- auth.middlware added
-- Cart Item Controller is fully working now
+- Rating Calculator (DHK)
+- auth.middlware added (DHK)
+- Cart Item Controller is fully working now (DHK)
+- Farmer Order Item Status Change + Get All Order Items (DHK)
+- Cart Item to Order payment method implemented (DHK)
+- Remove Item from Cart Added
 
 ### Removed
 
@@ -147,6 +150,7 @@ All notable changes to this project will be documented in this file.
 - GenerateTokenAndSetCookie modified to work with both bearer and cookie based (DHK)
 - Only Famers can create product that belongs to them and also remove them (DHK)
 ### Fixed
+- Fixed Data Model for order, address, product, paymentmethod and etc to work together (DHK)
 
 ### Todo 
 - Make API Endpoint for everything that exists (DHK)

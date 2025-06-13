@@ -127,7 +127,7 @@ export const oDeleteByName = async (req, res) => {
 // Create a new product for a farmer
 export const createFarmerProduct = async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const userId = req.userId;
         const {
             name,
             description,
@@ -178,6 +178,7 @@ export const createFarmerProduct = async (req, res) => {
             product
         });
     } catch (error) {
+        console.error("Error in createFarmerProduct:", error);
         res.status(400).json({ 
             success: false, 
             message: error.message 
@@ -208,7 +209,17 @@ export const getFarmerProducts = async (req, res) => {
 // Get products for the authenticated farmer
 export const getMyProducts = async (req, res) => {
     try {
-        const farmerId = req.user._id;
+        const farmerId = req.userId;
+
+        // Verify the user is a farmer
+        const farmer = await Farmer.findOne({ _id: farmerId, role: 'farmer' });
+        if (!farmer) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Only farmers can access their products" 
+            });
+        }
+
         const products = await Product.find({ farmer: farmerId })
             .populate('category', 'name')
             .populate('reviews');
@@ -218,6 +229,7 @@ export const getMyProducts = async (req, res) => {
             products
         });
     } catch (error) {
+        console.error("Error in getMyProducts:", error);
         res.status(400).json({ 
             success: false, 
             message: error.message 
@@ -228,7 +240,7 @@ export const getMyProducts = async (req, res) => {
 // Delete a product (farmer only, and only their own products)
 export const deleteProduct = async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const userId = req.userId;
         const productId = req.params.productId;
 
         // First verify the user is a farmer
