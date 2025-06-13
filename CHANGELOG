@@ -145,10 +145,12 @@ All notable changes to this project will be documented in this file.
 - Remove Item from Cart Added
 
 ### Removed
+- Postman Test Integration Removed due to outdated version (DHK)
 
 ### Changed
 - GenerateTokenAndSetCookie modified to work with both bearer and cookie based (DHK)
 - Only Famers can create product that belongs to them and also remove them (DHK)
+
 ### Fixed
 - Fixed Data Model for order, address, product, paymentmethod and etc to work together (DHK)
 
