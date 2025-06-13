@@ -19,8 +19,6 @@ npm run dev
 # Production
 npm start
 
-# Run tests
-npm run test:newman
 ```
 
 ## API Endpoints
