@@ -42,11 +42,11 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.4] - 2025-05-27
 ### Added
-- Cateogry CRUD Implemented
-- Product Create Read Implemented
+- Cateogry CRUD Implemented (DHK)
+- Product Create Read Implemented (DHK)
 
 ### Removed
-- Removed test for User Account Creation and Verification (DHK)
+- Removed test for User Account Creation and Verification (DHK) (DHK)
 
 
 ### Changed
@@ -57,33 +57,33 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.5] - 2025-05-28
 ### Added
-- Product GetAll and Find Implemented
-- Added Farmer Model and Review Model
-- Integrated User Model with Consumer and Farmer Model (inheritance)
-- git.ailaplacelab.com remote repository added
+- Product GetAll and Find Implemented (DHK)
+- Added Farmer Model and Review Model (DHK)
+- Integrated User Model with Consumer and Farmer Model (inheritance) (DHK)
+- git.ailaplacelab.com remote repository added (DHK)
 - jenkins pipeline added
 
 ### Removed
 
 
 ### Changed
-- Added Category CRUD Implementation with Validaiton Check with product
-- Modified User Model to add role and phone number
+- Added Category CRUD Implementation with Validaiton Check with product (DHK)
+- Modified User Model to add role and phone number (DHK)
 
 
 ### Fixed
 
 ### Todo 
-- Jenkins Pipeline for Docker Build and Push to Docker Registry (Fix)
+- Jenkins Pipeline for Docker Build and Push to Docker Registry (Fix) (DHK)
 
 
 
 
 ## [0.1.6] - 2025-05-30
 ### Added
-- CartItem Controller, Cart Controllerm , and routes Implemented
-- OrderItem Controller, Order Controller, and routes implemented
-- Postman Collection Testcases Implemented
+- CartItem Controller, Cart Controllerm , and routes Implemented (DHK)
+- OrderItem Controller, Order Controller, and routes implemented (DHK)
+- Postman Collection Testcases Implemented (DHK)
 
 ### Removed
 
@@ -103,8 +103,8 @@ All notable changes to this project will be documented in this file.
 ### Removed
 
 ### Changed
-- Modified Dockerfile
-- MongoDB Atlas is used instead of Local
+- Modified Dockerfile (DHK)
+- MongoDB Atlas is used instead of Local (DHK)
 
 ### Fixed
 
@@ -113,39 +113,39 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.8] - 2025-06-12
 ### Added
-- Added Address Model for easier maintanence
-- Payment Method is implemented
-- Review Model Added
+- Added Address Model for easier maintanence (DHK)
+- Payment Method is implemented (DHK)
+- Review Model Added (DHK)
 
 ### Removed
 
 ### Changed
-- Consumer and Farmer Initialization Account for testing has been modified to work well
-- Changed the testAccount.js to work with it
-- Updated Order and Consumer
+- Consumer and Farmer Initialization Account for testing has been modified to work well (DHK)
+- Changed the testAccount.js to work with it (DHK)
+- Updated Order and Consumer (DHK)
 
 ### Fixed
 
 ### Todo 
-- Connect Review Model to other Models
-- Make API Endpoint for everything that exists
-- Review Composition and association relationship
+- Connect Review Model to other Models (DHK)
+- Make API Endpoint for everything that exists (DHK)
+- Review Composition and association relationship (DHK)
 
 
 
 ## [0.1.9] - 2025-06-13
 
 ### Added
-- Authentication Handling with both bearer and cookie based
+- Authentication Handling with both bearer and cookie based (DHK)
 - Rating Calculator
 - auth.middlware added
 ### Removed
 
 ### Changed
-- GenerateTokenAndSetCookie modified to work with both bearer and cookie based
-- Only Famers can create product that belongs to them and also remove them
+- GenerateTokenAndSetCookie modified to work with both bearer and cookie based (DHK)
+- Only Famers can create product that belongs to them and also remove them (DHK)
 ### Fixed
 
 ### Todo 
-- Make API Endpoint for everything that exists
-- Review Composition and association relationship
+- Make API Endpoint for everything that exists (DHK)
+- Review Composition and association relationship (DHK)
