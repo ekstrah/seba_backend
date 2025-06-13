@@ -1,10 +1,32 @@
 import express from "express";
-import { oCreate, oGetAll, oFind, oDeleteByName } from "../controllers/product.controller.js";
+import { verifyToken } from "../middleware/verifyToken.js";
+import { verifyProductOwnership } from "../middleware/product.middleware.js";
+import {
+    oCreate,
+    oGetAll,
+    oFind,
+    oDeleteByName,
+    createFarmerProduct,
+    getFarmerProducts,
+    getMyProducts,
+    deleteProduct
+} from "../controllers/product.controller.js";
+
 const router = express.Router();
 
-router.post("/create", oCreate);
-router.get("/getAll", oGetAll);
-router.get("/find", oFind);
-router.delete("/delete/:name", oDeleteByName);
+// Public routes
+router.get("/", oGetAll);
+router.get("/search", oFind);
+
+// Protected routes (require authentication)
+router.use(verifyToken);
+
+// Farmer routes
+router.post("/farmer", createFarmerProduct);
+router.get("/farmer/:farmerId", getFarmerProducts);
+router.get("/my-products", getMyProducts);
+
+// Product ID specific routes (require product ownership verification)
+router.delete("/:productId", verifyProductOwnership, deleteProduct);
 
 export default router;

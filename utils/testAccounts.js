@@ -36,6 +36,7 @@ export const initializeTestAccounts = async () => {
 
             // Create a test delivery address for consumer
             const deliveryAddress = await Address.create({
+                user: consumer._id,
                 street: '123 Consumer St',
                 city: 'Consumer City',
                 state: 'CS',
@@ -70,18 +71,16 @@ export const initializeTestAccounts = async () => {
         if (!farmer) {
             const hashedPassword = await bcryptjs.hash(TEST_ACCOUNTS.farmer.password, 10);
             
-            // Create farm location address first
+            // Create farm location address first (no user required for farm addresses)
             const farmLocation = await Address.create({
                 street: '456 Farm Road',
                 city: 'Farmville',
                 state: 'FS',
                 zipCode: '67890',
-                addressType: 'farm',
-                coordinates: {
-                    latitude: 37.7749
-                }
+                addressType: 'farm'
             });
 
+            // Create farmer with farm location
             farmer = await Farmer.create({
                 ...TEST_ACCOUNTS.farmer,
                 password: hashedPassword,

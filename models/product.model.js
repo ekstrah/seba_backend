@@ -31,11 +31,11 @@ const productSchema = new mongoose.Schema(
         },
         harvestDate: {
             type: Date,
-            default: false,
+            default: null,
         },
         expiryDate: {
             type: Date,
-            default: false,
+            default: null,
         },
         certType: {
             type: String,
@@ -44,6 +44,11 @@ const productSchema = new mongoose.Schema(
         farmingMethod: {
             type: String,
             default: false,
+        },
+        farmer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Farmer",
+            required: true
         },
         category: {
             type: mongoose.Schema.Types.ObjectId,

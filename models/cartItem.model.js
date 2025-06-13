@@ -7,6 +7,11 @@ const cartItemSchema = new mongoose.Schema(
             ref: "Product",
             required: true,
         },
+        farmer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Farmer",
+            required: true,
+        },
         quantity: {
             type: Number,
             required: true,
@@ -32,7 +37,8 @@ cartItemSchema.pre('save', function(next) {
     next();
 });
 
-// Index for faster queries
+// Indexes for faster queries
 cartItemSchema.index({ product: 1 });
+cartItemSchema.index({ farmer: 1 });
 
 export const CartItem = mongoose.model("CartItem", cartItemSchema); 

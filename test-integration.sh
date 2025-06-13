@@ -1,1 +1,0 @@
-newman run ./tests/postman/FresichFarm.postman_collection.json
