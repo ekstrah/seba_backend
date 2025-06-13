@@ -45,6 +45,11 @@ const productSchema = new mongoose.Schema(
             type: String,
             default: false,
         },
+        farmer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Farmer",
+            required: true
+        },
         category: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Category",

@@ -9,7 +9,6 @@ export const oCreate = async (req, res) => {
         }
 
         const categoryAlreadyExists = await Category.findOne({ name });
-        console.log("Category Already Exists", categoryAlreadyExists);
         if (categoryAlreadyExists) {
             return res.status(400).json({ success: false, message: "Category already exists" });
         }

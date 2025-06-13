@@ -138,11 +138,12 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Authentication Handling with both bearer and cookie based
 - Rating Calculator
+- auth.middlware added
 ### Removed
 
 ### Changed
 - GenerateTokenAndSetCookie modified to work with both bearer and cookie based
-
+- Only Famers can create product that belongs to them and also remove them
 ### Fixed
 
 ### Todo 
