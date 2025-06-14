@@ -158,3 +158,23 @@ All notable changes to this project will be documented in this file.
 - Make API Endpoint for everything that exists (DHK)
 - Review Composition and association relationship (DHK)
 - Swagger Port for Dev instead of Postman(?)
+
+
+## [0.1.10] - 2025-06-14
+
+### Added
+
+
+### Removed
+
+
+### Changed
+- Consumer used to have product itself in cart but now added cart object
+
+### Fixed
+
+
+### Todo 
+- Make API Endpoint for everything that exists (DHK)
+- Review Composition and association relationship (DHK)
+- Swagger Port for Dev instead of Postman(?)
