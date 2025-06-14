@@ -22,7 +22,9 @@
     "jsonwebtoken": "^9.0.2",
     "mailtrap": "^4.1.0",
     "mongoose": "^8.15.1",
-    "nodemon": "^3.1.10"
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.10",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.27.4",

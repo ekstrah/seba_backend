@@ -178,3 +178,23 @@ All notable changes to this project will be documented in this file.
 - Make API Endpoint for everything that exists (DHK)
 - Review Composition and association relationship (DHK)
 - Swagger Port for Dev instead of Postman(?)
+
+
+## [0.1.11] - 2025-06-15
+
+### Added
+
+
+### Removed
+
+
+### Changed
+- Added Logger for easier analysis
+
+### Fixed
+
+
+### Todo 
+- Make API Endpoint for everything that exists (DHK)
+- Review Composition and association relationship (DHK)
+- Swagger Port for Dev instead of Postman(?)
