@@ -183,7 +183,8 @@ All notable changes to this project will be documented in this file.
 ## [0.1.11] - 2025-06-15
 
 ### Added
-
+- More Test Consumer User and Farmer account
+- docker-compose build file
 
 ### Removed
 
