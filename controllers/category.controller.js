@@ -91,7 +91,7 @@ export const oReadAll = async (req, res) => {
                 allCategories
             },
         });
-    } catch {
+    } catch (error) {
         console.log("error in oReadAll Category ", error);
         res.status(500).json({ success: false, message: "Server error" });
     }

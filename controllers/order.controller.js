@@ -4,7 +4,6 @@ import { Cart } from "../models/cart.model.js";
 import { CartItem } from "../models/cartItem.model.js";
 import { Product } from "../models/product.model.js";
 import { PaymentMethod } from "../models/paymentMethod.model.js";
-import { Consumer } from "../models/consumer.model.js";
 
 // Create a new order
 export const createOrder = async (req, res) => {

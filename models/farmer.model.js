@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { User } from "./user.model.js";
-import { Address } from "./address.model.js";
 
 const farmerSchema = new mongoose.Schema({
     farmName: {

@@ -46,7 +46,7 @@ export const oGetAll = async (req, res) => {
                 allProducts
             },
         });
-    } catch {
+    } catch (error) {
         console.log("error in oGetAll Product ", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
@@ -90,7 +90,7 @@ export const oFind = async (req, res) => {
                 total
             },
         });
-    } catch {
+    } catch (error) {
         console.log("error in find Product ", error);
         res.status(500).json({ success: false, message: "Server error" });
     }

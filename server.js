@@ -36,7 +36,7 @@ app.use("/api/payment-methods", paymentMethodRoutes);
 app.use("/api/addresses", addressRoutes);
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
     logger.error('Unhandled error:', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Internal Server Error' });
 });

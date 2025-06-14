@@ -2,10 +2,8 @@ import express from "express";
 import { verifyToken } from "../middleware/verifyToken.js";
 import { verifyProductOwnership } from "../middleware/product.middleware.js";
 import {
-    oCreate,
     oGetAll,
     oFind,
-    oDeleteByName,
     createFarmerProduct,
     getFarmerProducts,
     getMyProducts,

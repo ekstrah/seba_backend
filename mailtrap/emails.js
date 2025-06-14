@@ -5,7 +5,7 @@ export const sendVerificationEmail = async (email, verificationToken) => {
     const recepient = [{ email }]
 
     try {
-        const response = await mailtrapClient.send({
+        await mailtrapClient.send({
             from: sender,
             to: recepient,
             subject: "Verify your email",
@@ -46,7 +46,7 @@ export const sendWelcomeEmail = async (email, name) => {
 export const sendPasswordResetEmail = async (email, resetURL) => {
     const recipient = [{email}];
     try {
-        const response = await mailtrapClient.send({
+        await mailtrapClient.send({
             from: sender,
             to: recipient,
             subject: "Rset Your Password",

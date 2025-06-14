@@ -193,6 +193,7 @@ All notable changes to this project will be documented in this file.
 - Added Logger for easier analysis
 
 ### Fixed
+- ESLint fixed
 
 
 ### Todo 

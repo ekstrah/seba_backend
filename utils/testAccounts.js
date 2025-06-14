@@ -93,7 +93,7 @@ export const initializeTestAccounts = async () => {
                 await consumer.addDeliveryAddress(deliveryAddress);
 
                 // Create a test payment method for consumer
-                const paymentMethod = await consumer.addPaymentMethod({
+                await consumer.addPaymentMethod({
                     type: 'credit_card',
                     isDefault: true,
                     processor: 'stripe',
