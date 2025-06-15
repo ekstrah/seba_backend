@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.1.11",
+  "version": "0.1.11.1",
   "main": "server.js",
   "scripts": {
     "test:newman": "newman run ./tests/postman/FresichFarm.postman_collection.json",

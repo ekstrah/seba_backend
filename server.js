@@ -15,6 +15,7 @@ import cartRoutes from "./routes/cart.routes.js";
 import reviewRoutes from "./routes/review.route.js";
 import paymentMethodRoutes from "./routes/paymentMethod.routes.js";
 import addressRoutes from "./routes/address.routes.js";
+import userRoutes from "./routes/user.routes.js"
 
 dotenv.config();
 const app = express();
@@ -34,9 +35,10 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/review", reviewRoutes);
 app.use("/api/payment-methods", paymentMethodRoutes);
 app.use("/api/addresses", addressRoutes);
+app.use("/api/user", userRoutes);
 
 // Error handling middleware
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
     logger.error('Unhandled error:', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Internal Server Error' });
 });

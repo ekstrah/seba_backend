@@ -183,20 +183,41 @@ All notable changes to this project will be documented in this file.
 ## [0.1.11] - 2025-06-15
 
 ### Added
-- More Test Consumer User and Farmer account
-- docker-compose build file
+- More Test Consumer User and Farmer account(DHK)
+- docker-compose build file(DHK)
 
 ### Removed
 
 
 ### Changed
-- Added Logger for easier analysis
+- Added Logger for easier analysis(DHK)
 
 ### Fixed
-- ESLint fixed
+- ESLint fixed(DHK)
 
 
 ### Todo 
 - Make API Endpoint for everything that exists (DHK)
 - Review Composition and association relationship (DHK)
 - Swagger Port for Dev instead of Postman(?)
+
+
+## [0.1.11.1] - 2025-06-16
+
+### Added
+- User Profile Endpoint
+
+### Removed
+
+
+### Changed
+
+
+### Fixed
+
+
+### Todo 
+- Make API Endpoint for everything that exists (DHK)
+- Review Composition and association relationship (DHK)
+- Swagger Port for Dev instead of Postman(?)
+- Think about how to manage profile images and product images
