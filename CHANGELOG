@@ -221,3 +221,58 @@ All notable changes to this project will be documented in this file.
 - Review Composition and association relationship (DHK)
 - Swagger Port for Dev instead of Postman(?)
 - Think about how to manage profile images and product images
+- Sharp Integration for Image Uploads
+```js
+const sharp = require('sharp');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs').promises;
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+app.post('/api/upload', upload.single('image'), async (req, res) => {
+  try {
+    const filename = `${Date.now()}-${Math.round(Math.random() * 1E9)}.webp`;
+    const filepath = path.join('uploads', filename);
+    
+    await sharp(req.file.buffer)
+      .resize(800, 600, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toFile(filepath);
+    
+    const imageUrl = `/api/images/${filename}`;
+    res.json({ url: imageUrl, filename });
+  } catch (error) {
+    res.status(500).json({ error: 'Upload failed' });
+  }
+});
+
+// Serve optimized images
+app.get('/api/images/:filename', async (req, res) => {
+  const { filename } = req.params;
+  const { w, h, q = 80 } = req.query;
+  
+  try {
+    let image = sharp(`uploads/${filename}`);
+    
+    if (w || h) {
+      image = image.resize(parseInt(w) || null, parseInt(h) || null, {
+        fit: 'inside',
+        withoutEnlargement: true
+      });
+    }
+    
+    const buffer = await image.webp({ quality: parseInt(q) }).toBuffer();
+    
+    res.set({
+      'Content-Type': 'image/webp',
+      'Cache-Control': 'public, max-age=31536000'
+    });
+    
+    res.send(buffer);
+  } catch (error) {
+    res.status(404).send('Image not found');
+  }
+});
+```
