@@ -6,6 +6,8 @@ import cors from "cors";
 
 import { connectDB } from "./db/connectDB.js";
 import { initializeTestAccounts } from "./utils/testAccounts.js";
+import { initializeTestCategories } from "./utils/testCategories.js";
+import {initializeTestProducts} from "./utils/testProducts.js";
 import logger from "./utils/logger.js";
 
 import authRoutes from "./routes/auth.route.js";
@@ -83,6 +85,12 @@ if (process.env.NODE_ENV !== "test") {
             // Initialize test accounts after database connection
             await initializeTestAccounts();
             logger.info('Test accounts initialized successfully');
+
+            await initializeTestCategories();
+            logger.info("Test categories intiailized sucessfully");
+
+            await initializeTestProducts();
+            logger.info("Test products initialized sucessfully");
             
             logger.info(`Server started at 0.0.0.0:${PORT}`);
         } catch (error) {
