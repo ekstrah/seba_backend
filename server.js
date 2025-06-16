@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
+import cors from "cors";
 
 import { connectDB } from "./db/connectDB.js";
 import { initializeTestAccounts } from "./utils/testAccounts.js";
@@ -21,7 +22,35 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// CORS configuration
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        const allowedOrigins = [
+            'http://localhost:8000',
+            'http://localhost:5173',
+            'http://127.0.0.1:8000',
+            'http://127.0.0.1:5173',
+            process.env.CLIENT_URL
+        ].filter(Boolean); // Remove any undefined values
+
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Set-Cookie'],
+    maxAge: 86400 // 24 hours
+};
+
 // Middleware
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('combined', { stream: logger.stream }));

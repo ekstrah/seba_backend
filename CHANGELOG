@@ -276,3 +276,25 @@ app.get('/api/images/:filename', async (req, res) => {
   }
 });
 ```
+
+
+## [0.1.11.2] - 2025-06-16
+
+### Added
+- CORS compatibility
+
+### Removed
+
+
+### Changed
+
+
+### Fixed
+
+
+### Todo 
+- Make API Endpoint for everything that exists (DHK)
+- Review Composition and association relationship (DHK)
+- Swagger Port for Dev instead of Postman(?)
+- Think about how to manage profile images and product images
+- Sharp Integration for Image Uploads
