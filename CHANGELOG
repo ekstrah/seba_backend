@@ -283,7 +283,7 @@ app.get('/api/images/:filename', async (req, res) => {
 ### Added
 - CORS compatibility
 - test Dataset Inserted for Frontend Developing
-
+- Search Engine Endpoint api added
 ### Removed
 
 
