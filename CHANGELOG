@@ -288,7 +288,7 @@ app.get('/api/images/:filename', async (req, res) => {
 
 
 ### Changed
-
+- Migrated from eslint to Biome
 
 ### Fixed
 

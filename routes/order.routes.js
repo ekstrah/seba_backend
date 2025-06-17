@@ -1,16 +1,16 @@
 import express from "express";
 import { verifyToken } from "../middleware/verifyToken.js";
 import {
-    createOrder,
-    getAllOrders,
-    getOrderById,
-    updateOrderStatus,
-    updatePaymentStatus,
-    getOrdersByConsumer,
-    getOrdersByFarmer,
-    cancelOrder,
-    createOrderFromCart,
-    updateOrderItemStatus
+	createOrder,
+	getAllOrders,
+	getOrderById,
+	updateOrderStatus,
+	updatePaymentStatus,
+	getOrdersByConsumer,
+	getOrdersByFarmer,
+	cancelOrder,
+	createOrderFromCart,
+	updateOrderItemStatus,
 } from "../controllers/order.controller.js";
 
 const router = express.Router();
@@ -48,4 +48,4 @@ router.post("/:id/cancel", cancelOrder);
 // Update order item status
 router.patch("/items/:orderItemId/status", updateOrderItemStatus);
 
-export default router; 
+export default router;

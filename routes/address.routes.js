@@ -1,10 +1,10 @@
 import express from "express";
 import { verifyToken } from "../middleware/verifyToken.js";
 import {
-    getAddresses,
-    addAddress,
-    updateAddress,
-    deleteAddress
+	getAddresses,
+	addAddress,
+	updateAddress,
+	deleteAddress,
 } from "../controllers/address.controller.js";
 
 const router = express.Router();
@@ -24,4 +24,4 @@ router.put("/:addressId", updateAddress);
 // Delete address
 router.delete("/:addressId", deleteAddress);
 
-export default router; 
+export default router;

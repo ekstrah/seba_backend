@@ -1,5 +1,13 @@
 import express from "express";
-import { login, signup, logout, verifyEmail, forgotPassword, resetPassword, checkAuth } from "../controllers/auth.controller.js";
+import {
+	login,
+	signup,
+	logout,
+	verifyEmail,
+	forgotPassword,
+	resetPassword,
+	checkAuth,
+} from "../controllers/auth.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 const router = express.Router();
 
@@ -11,10 +19,8 @@ router.post("/logout", logout);
 router.post("/verify-email", verifyEmail);
 router.post("/forgot-password", forgotPassword);
 
-router.post("/reset-password/:token", resetPassword)
-
+router.post("/reset-password/:token", resetPassword);
 
 export default router;
-
 
 // https://youtu.be/pmvEgZC55Cg?t=1028

@@ -56,10 +56,10 @@ const userSchema = new mongoose.Schema(
 		verificationToken: String,
 		verificationTokenExpiresAt: Date,
 	},
-	{ 
+	{
 		timestamps: true,
-		discriminatorKey: 'role'
-	}
+		discriminatorKey: "role",
+	},
 );
 
 // Compound indexes for common query patterns

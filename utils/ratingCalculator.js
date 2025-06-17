@@ -5,24 +5,28 @@
  * @param {number} oldRating - The old rating value (1-5) if updating, null if new review
  * @returns {Object} Updated rating object { average: number, count: number }
  */
-export const calculateNewRating = (currentRating, newRating, oldRating = null) => {
-    const { average, count } = currentRating;
+export const calculateNewRating = (
+	currentRating,
+	newRating,
+	oldRating = null,
+) => {
+	const { average, count } = currentRating;
 
-    // If this is a new review
-    if (oldRating === null) {
-        const newAverage = ((average * count) + newRating) / (count + 1);
-        return {
-            average: Number(newAverage.toFixed(1)),
-            count: count + 1
-        };
-    }
+	// If this is a new review
+	if (oldRating === null) {
+		const newAverage = (average * count + newRating) / (count + 1);
+		return {
+			average: Number(newAverage.toFixed(1)),
+			count: count + 1,
+		};
+	}
 
-    // If this is an update to an existing review
-    const newAverage = ((average * count) - oldRating + newRating) / count;
-    return {
-        average: Number(newAverage.toFixed(1)),
-        count: count
-    };
+	// If this is an update to an existing review
+	const newAverage = (average * count - oldRating + newRating) / count;
+	return {
+		average: Number(newAverage.toFixed(1)),
+		count: count,
+	};
 };
 
 /**
@@ -32,18 +36,18 @@ export const calculateNewRating = (currentRating, newRating, oldRating = null) =
  * @returns {Object} Updated rating object { average: number, count: number }
  */
 export const calculateRatingAfterDeletion = (currentRating, deletedRating) => {
-    const { average, count } = currentRating;
+	const { average, count } = currentRating;
 
-    if (count <= 1) {
-        return {
-            average: 0,
-            count: 0
-        };
-    }
+	if (count <= 1) {
+		return {
+			average: 0,
+			count: 0,
+		};
+	}
 
-    const newAverage = ((average * count) - deletedRating) / (count - 1);
-    return {
-        average: Number(newAverage.toFixed(1)),
-        count: count - 1
-    };
-}; 
+	const newAverage = (average * count - deletedRating) / (count - 1);
+	return {
+		average: Number(newAverage.toFixed(1)),
+		count: count - 1,
+	};
+};

@@ -1,5 +1,9 @@
 import express from "express";
-import { oCreate, oDelete, oReadAll } from "../controllers/category.controller.js";
+import {
+	oCreate,
+	oDelete,
+	oReadAll,
+} from "../controllers/category.controller.js";
 const router = express.Router();
 
 router.post("/create", oCreate);

@@ -2,12 +2,12 @@ import express from "express";
 import { verifyToken } from "../middleware/verifyToken.js";
 import { verifyProductOwnership } from "../middleware/product.middleware.js";
 import {
-    oGetAll,
-    oFind,
-    createFarmerProduct,
-    getFarmerProducts,
-    getMyProducts,
-    deleteProduct
+	oGetAll,
+	oFind,
+	createFarmerProduct,
+	getFarmerProducts,
+	getMyProducts,
+	deleteProduct,
 } from "../controllers/product.controller.js";
 
 const router = express.Router();

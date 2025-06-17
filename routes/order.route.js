@@ -1,12 +1,12 @@
 import express from "express";
 import {
-    createOrder,
-    getAllOrders,
-    getOrderById,
-    updateOrderStatus,
-    updatePaymentStatus,
-    getOrdersByConsumer,
-    cancelOrder
+	createOrder,
+	getAllOrders,
+	getOrderById,
+	updateOrderStatus,
+	updatePaymentStatus,
+	getOrdersByConsumer,
+	cancelOrder,
 } from "../controllers/order.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -36,4 +36,4 @@ router.get("/consumer/orders", getOrdersByConsumer);
 // Cancel order
 router.post("/:id/cancel", cancelOrder);
 
-export default router; 
+export default router;
