@@ -100,7 +100,7 @@ export const initializeTestAccounts = async () => {
 					type: "credit_card",
 					isDefault: true,
 					processor: "stripe",
-					processorToken: "tok_test_" + Math.random().toString(36).substring(7),
+					processorToken: "tok_test_${Math.random().toString(36).substring(7)}",
 					displayInfo: {
 						lastFourDigits: "4242",
 						cardType: "visa",

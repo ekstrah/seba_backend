@@ -91,7 +91,7 @@ export const addToCart = async (req, res) => {
 
 		// Convert product price from string to number
 		const unitPrice = Number.parseFloat(product.price);
-		if (isNaN(unitPrice)) {
+		if (Number.isNaN(unitPrice)) {
 			return res.status(400).json({
 				success: false,
 				message: "Invalid product price",

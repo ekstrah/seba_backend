@@ -20,8 +20,8 @@ export const sendVerificationEmail = async (email, verificationToken) => {
 			category: "Email Verification",
 		});
 	} catch (error) {
-		console.error(`Error sending verification`, error);
-		throw new Error(`Error sending verification email: ${error}`);
+		console.error("Error sending verification", error);
+		throw new Error("Error sending verification email: ${error}");
 	}
 };
 
@@ -43,7 +43,7 @@ export const sendWelcomeEmail = async (email, name) => {
 		});
 		console.log("Welcome email sent successfully", response);
 	} catch (error) {
-		console.error(`Error sending welcome email`, error);
+		console.error("Error sending welcome email", error);
 
 		throw new Error(`Error sending welcome email: ${error}`);
 	}
@@ -60,9 +60,9 @@ export const sendPasswordResetEmail = async (email, resetURL) => {
 			category: "Password Reset",
 		});
 	} catch (error) {
-		console.error(`Error sending password reset email`, error);
+		console.error("Error sending password reset email", error);
 
-		throw new Error(`Error sending password reset email: ${error}`);
+		throw new Error("Error sending password reset email: ${error}");
 	}
 };
 
@@ -81,6 +81,6 @@ export const sendResetSucessEmail = async (email) => {
 	} catch (error) {
 		console.log("Error sending password reset sucess email", error);
 
-		throw new Error(`Error sending password reset sucess email: ${error}`);
+		throw new Error("Error sending password reset sucess email: ${error}");
 	}
 };
