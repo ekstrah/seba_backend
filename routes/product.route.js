@@ -8,6 +8,7 @@ import {
 	getFarmerProducts,
 	getMyProducts,
 	deleteProduct,
+	getProductById,
 } from "../controllers/product.controller.js";
 
 const router = express.Router();
@@ -15,6 +16,7 @@ const router = express.Router();
 // Public routes
 router.get("/", oGetAll);
 router.get("/search", oFind);
+router.get("/:id", getProductById);
 
 // Protected routes (require authentication)
 router.use(verifyToken);
