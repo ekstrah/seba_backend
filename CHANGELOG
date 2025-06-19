@@ -328,9 +328,11 @@ app.get('/api/images/:filename', async (req, res) => {
 
 
 ### Changed
+- DeleteItem quantity is set to none as default
+- Product Model Price from String to Double
 
 ### Fixed
-
+- Endpoint for Address and PaymentMethod fixed
 
 ### Todo 
 - Make API Endpoint for everything that exists (DHK)

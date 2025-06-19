@@ -56,14 +56,13 @@ const getAllCategoriesInfo = async () => {
 };
 
 /**
- * Generates a random price string in the format "XX.XX"
- * @returns {Promise<string>} Random price string
+ * Generates a random price number in the format XX.XX
+ * @returns {Promise<number>} Random price number
  */
-const generateRandomNumberString = async () => {
+const generateRandomPrice = async () => {
 	const wholeNumber = Math.floor(Math.random() * 100);
 	const decimal = Math.floor(Math.random() * 91);
-	const formattedDecimal = String(decimal).padStart(2, "0");
-	return `${wholeNumber}.${formattedDecimal}`;
+	return parseFloat(`${wholeNumber}.${decimal.toString().padStart(2, "0")}`);
 };
 
 /**
@@ -95,7 +94,7 @@ export const initializeTestProducts = async () => {
 				const product = {
 					name: `${farmer.farmName} ${category.name}`,
 					description: `${farmer.farmName} ${category.name}`,
-					price: await generateRandomNumberString(),
+					price: await generateRandomPrice(),
 					stock: 100,
 					imagePath: "/to/image.jpg",
 					harvestDate: "2024-03-20",

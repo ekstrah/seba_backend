@@ -4,6 +4,7 @@ import {
 	updateContactInfo,
 } from "../controllers/user.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
+import { getAddresses } from "../controllers/address.controller.js";
 
 const router = express.Router();
 
@@ -15,5 +16,8 @@ router.get("/contact", getContactInfo);
 
 // Update user contact information
 router.put("/contact", updateContactInfo);
+
+// Get user addresses
+router.get("/addresses", getAddresses);
 
 export default router;

@@ -230,7 +230,7 @@ export const updateCartItem = async (req, res) => {
 export const removeFromCart = async (req, res) => {
 	try {
 		const { cartItemId } = req.params;
-		const quantity = req.body?.quantity || 1; // Default to 1 if not specified
+		const quantity = req.body?.quantity;
 
 		const cartItem = await CartItem.findById(cartItemId);
 		if (!cartItem) {
@@ -253,25 +253,21 @@ export const removeFromCart = async (req, res) => {
 			});
 		}
 
-		// If quantity to remove is less than current quantity, reduce it
-		if (quantity < cartItem.quantity) {
-			// Remove specific quantity
+		// Only decrement if quantity is provided and less than current quantity
+		if (quantity && quantity < cartItem.quantity) {
 			const oldSubtotal = cartItem.subtotal;
 			cartItem.quantity -= quantity;
 			cartItem.subtotal = cartItem.quantity * cartItem.unitPrice;
 			await cartItem.save();
 
-			// Update cart total
 			cart.totalAmount -= oldSubtotal - cartItem.subtotal;
 			await cart.save();
 
-			// Populate cart details
 			await cart.populate({
 				path: "items",
 				populate: [{ path: "product" }, { path: "farmer" }],
 			});
 
-			// Calculate totals by farmer
 			const farmerTotals = cart.items.reduce((totals, item) => {
 				const farmerId = item.farmer._id.toString();
 				if (!totals[farmerId]) {
@@ -296,21 +292,17 @@ export const removeFromCart = async (req, res) => {
 			});
 		}
 
-		// If quantity to remove is equal to or greater than current quantity, remove the entire item
+		// Otherwise, remove the entire item
 		cart.items = cart.items.filter((item) => item.toString() !== cartItemId);
 		cart.totalAmount -= cartItem.subtotal;
 		await cart.save();
-
-		// Delete cart item
 		await CartItem.findByIdAndDelete(cartItemId);
 
-		// Populate cart details
 		await cart.populate({
 			path: "items",
 			populate: [{ path: "product" }, { path: "farmer" }],
 		});
 
-		// Calculate totals by farmer
 		const farmerTotals = cart.items.reduce((totals, item) => {
 			const farmerId = item.farmer._id.toString();
 			if (!totals[farmerId]) {

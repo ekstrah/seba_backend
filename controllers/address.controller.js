@@ -4,21 +4,10 @@ import { Consumer } from "../models/consumer.model.js";
 // Get all addresses for the current user
 export const getAddresses = async (req, res) => {
 	try {
-		const addresses = await Address.find({ user: req.userId }).sort({
-			isDefault: -1,
-			createdAt: -1,
-		});
-
-		res.json({
-			success: true,
-			addresses,
-		});
+		const addresses = await Address.find({ user: req.userId });
+		res.status(200).json({ addresses });
 	} catch (error) {
-		console.error("Error in getAddresses:", error);
-		res.status(500).json({
-			success: false,
-			message: "Server error",
-		});
+		res.status(500).json({ message: "Failed to fetch addresses" });
 	}
 };
 
