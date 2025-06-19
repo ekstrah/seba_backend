@@ -1,15 +1,15 @@
 import express from "express";
-import { verifyToken } from "../middleware/verifyToken.js";
-import { verifyProductOwnership } from "../middleware/product.middleware.js";
 import {
-	oGetAll,
-	oFind,
 	createFarmerProduct,
+	deleteProduct,
 	getFarmerProducts,
 	getMyProducts,
-	deleteProduct,
 	getProductById,
+	oFind,
+	oGetAll,
 } from "../controllers/product.controller.js";
+import { verifyProductOwnership } from "../middleware/product.middleware.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 

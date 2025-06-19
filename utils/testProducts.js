@@ -1,5 +1,5 @@
-import { Farmer } from "../models/farmer.model.js";
 import { Category } from "../models/category.model.js";
+import { Farmer } from "../models/farmer.model.js";
 import { Product } from "../models/product.model.js";
 import logger from "./logger.js";
 

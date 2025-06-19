@@ -1,16 +1,15 @@
-import bcryptjs from "bcryptjs";
 import crypto from "node:crypto";
-
-import { User } from "../models/user.model.js";
-import { Consumer } from "../models/consumer.model.js";
-import { Farmer } from "../models/farmer.model.js";
-import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
+import bcryptjs from "bcryptjs";
 import {
-	sendVerificationEmail,
-	sendWelcomeEmail,
 	sendPasswordResetEmail,
 	sendResetSucessEmail,
+	sendVerificationEmail,
+	sendWelcomeEmail,
 } from "../mailtrap/emails.js";
+import { Consumer } from "../models/consumer.model.js";
+import { Farmer } from "../models/farmer.model.js";
+import { User } from "../models/user.model.js";
+import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 
 export const signup = async (req, res) => {
 	const { email, password, name, phone, role } = req.body;

@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import { User } from "./user.model.js";
 import { Address } from "./address.model.js";
-import { PaymentMethod } from "./paymentMethod.model.js";
 import { Cart } from "./cart.model.js";
+import { PaymentMethod } from "./paymentMethod.model.js";
+import { User } from "./user.model.js";
 
 // Consumer-specific schema that extends User
 const consumerSchema = new mongoose.Schema(

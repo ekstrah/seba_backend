@@ -1,5 +1,5 @@
-import { Product } from "../models/product.model.js";
 import { Farmer } from "../models/farmer.model.js";
+import { Product } from "../models/product.model.js";
 
 export const verifyProductOwnership = async (req, res, next) => {
 	try {

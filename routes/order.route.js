@@ -1,12 +1,12 @@
 import express from "express";
 import {
+	cancelOrder,
 	createOrder,
 	getAllOrders,
 	getOrderById,
+	getOrdersByConsumer,
 	updateOrderStatus,
 	updatePaymentStatus,
-	getOrdersByConsumer,
-	cancelOrder,
 } from "../controllers/order.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 

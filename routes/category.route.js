@@ -4,6 +4,7 @@ import {
 	oDelete,
 	oReadAll,
 } from "../controllers/category.controller.js";
+
 const router = express.Router();
 
 router.post("/create", oCreate);

@@ -1,17 +1,17 @@
 import express from "express";
-import { verifyToken } from "../middleware/verifyToken.js";
 import {
+	cancelOrder,
 	createOrder,
+	createOrderFromCart,
 	getAllOrders,
 	getOrderById,
-	updateOrderStatus,
-	updatePaymentStatus,
 	getOrdersByConsumer,
 	getOrdersByFarmer,
-	cancelOrder,
-	createOrderFromCart,
 	updateOrderItemStatus,
+	updateOrderStatus,
+	updatePaymentStatus,
 } from "../controllers/order.controller.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 

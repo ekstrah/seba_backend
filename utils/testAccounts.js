@@ -1,7 +1,7 @@
 import bcryptjs from "bcryptjs";
+import { Address } from "../models/address.model.js";
 import { Consumer } from "../models/consumer.model.js";
 import { Farmer } from "../models/farmer.model.js";
-import { Address } from "../models/address.model.js";
 
 const TEST_ACCOUNTS = {
 	consumers: [

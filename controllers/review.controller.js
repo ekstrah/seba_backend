@@ -1,6 +1,6 @@
-import Review from "../models/review.model.js";
-import { Product } from "../models/product.model.js";
 import { Farmer } from "../models/farmer.model.js";
+import { Product } from "../models/product.model.js";
+import Review from "../models/review.model.js";
 import {
 	calculateNewRating,
 	calculateRatingAfterDeletion,

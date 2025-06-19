@@ -1,11 +1,11 @@
 import express from "express";
-import { verifyToken } from "../middleware/verifyToken.js";
 import {
 	createReview,
-	updateReview,
 	deleteReview,
 	getReviews,
+	updateReview,
 } from "../controllers/review.controller.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 

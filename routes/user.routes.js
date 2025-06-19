@@ -1,9 +1,9 @@
 import express from "express";
-import { verifyToken } from "../middleware/verifyToken.js";
 import {
-	updateContactInfo,
 	getContactInfo,
+	updateContactInfo,
 } from "../controllers/user.controller.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 

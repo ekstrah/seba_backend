@@ -1,24 +1,23 @@
-import express from "express";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import morgan from "morgan";
 import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
+import morgan from "morgan";
 
 import { connectDB } from "./db/connectDB.js";
+import addressRoutes from "./routes/address.routes.js";
+import authRoutes from "./routes/auth.route.js";
+import cartRoutes from "./routes/cart.routes.js";
+import categoryRoutes from "./routes/category.route.js";
+import orderRoutes from "./routes/order.routes.js";
+import paymentMethodRoutes from "./routes/paymentMethod.routes.js";
+import productRoutes from "./routes/product.route.js";
+import reviewRoutes from "./routes/review.route.js";
+import userRoutes from "./routes/user.routes.js";
+import logger from "./utils/logger.js";
 import { initializeTestAccounts } from "./utils/testAccounts.js";
 import { initializeTestCategories } from "./utils/testCategories.js";
 import { initializeTestProducts } from "./utils/testProducts.js";
-import logger from "./utils/logger.js";
-
-import authRoutes from "./routes/auth.route.js";
-import categoryRoutes from "./routes/category.route.js";
-import productRoutes from "./routes/product.route.js";
-import orderRoutes from "./routes/order.routes.js";
-import cartRoutes from "./routes/cart.routes.js";
-import reviewRoutes from "./routes/review.route.js";
-import paymentMethodRoutes from "./routes/paymentMethod.routes.js";
-import addressRoutes from "./routes/address.routes.js";
-import userRoutes from "./routes/user.routes.js";
 
 dotenv.config();
 const app = express();

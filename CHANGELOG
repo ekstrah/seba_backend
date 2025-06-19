@@ -318,3 +318,23 @@ app.get('/api/images/:filename', async (req, res) => {
 - Swagger Port for Dev instead of Postman(?)
 - Think about how to manage profile images and product images
 - Sharp Integration for Image Uploads
+
+
+
+## [0.1.11.4] - 2025-06-19
+
+### Added
+- Local Storage to Cart Merge API & Function Added
+
+
+### Changed
+
+### Fixed
+
+
+### Todo 
+- Make API Endpoint for everything that exists (DHK)
+- Review Composition and association relationship (DHK)
+- Swagger Port for Dev instead of Postman(?)
+- Think about how to manage profile images and product images
+- Sharp Integration for Image Uploads

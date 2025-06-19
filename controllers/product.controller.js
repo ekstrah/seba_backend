@@ -1,5 +1,5 @@
-import { Product } from "../models/product.model.js";
 import { Farmer } from "../models/farmer.model.js";
+import { Product } from "../models/product.model.js";
 
 export const oCreate = async (req, res) => {
 	const {
@@ -314,7 +314,9 @@ export const getProductById = async (req, res) => {
 			.populate("category", "name")
 			.populate("reviews");
 		if (!product) {
-			return res.status(404).json({ success: false, message: "Product not found" });
+			return res
+				.status(404)
+				.json({ success: false, message: "Product not found" });
 		}
 		res.status(200).json({ success: true, product });
 	} catch (error) {

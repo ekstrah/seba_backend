@@ -1,7 +1,8 @@
 // eslint.config.js
+
+import jsConfig from "@eslint/js"; // Import CommonJS module as default
 import { defineConfig } from "eslint/config";
 import globals from "globals";
-import jsConfig from "@eslint/js"; // Import CommonJS module as default
 
 const { configs } = jsConfig;
 
