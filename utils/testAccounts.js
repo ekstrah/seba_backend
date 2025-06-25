@@ -2,6 +2,7 @@ import bcryptjs from "bcryptjs";
 import { Address } from "../models/address.model.js";
 import { Consumer } from "../models/consumer.model.js";
 import { Farmer } from "../models/farmer.model.js";
+import { fakerDE as faker  } from '@faker-js/faker';
 
 const TEST_ACCOUNTS = {
 	consumers: [
@@ -76,18 +77,29 @@ export const initializeTestAccounts = async () => {
 			let consumer = await Consumer.findOne({ email: consumerData.email });
 			if (!consumer) {
 				const hashedPassword = await bcryptjs.hash(consumerData.password, 10);
+				// Generate random name and phone
+				const randomName = faker.person.fullName();
+				const randomPhone = faker.phone.number({ style: 'international'  });
+				const randomCity = faker.location.city();
+				const randomStreetAddress = faker.location.streetAddress(); 
+				const randomZipCode = faker.location.zipCode();
+				const creditCardNumber = faker.finance.creditCardNumber();
+				const expiryDate = faker.date.future({ years: 5 });
+				
 				consumer = await Consumer.create({
 					...consumerData,
+					name: randomName,
+					phone: randomPhone,
 					password: hashedPassword,
 				});
 
 				// Create a test delivery address for consumer
 				const deliveryAddress = await Address.create({
 					user: consumer._id,
-					street: `${Math.floor(Math.random() * 1000)} Consumer St`,
-					city: "Consumer City",
-					state: "CS",
-					zipCode: "12345",
+					street: randomStreetAddress,
+					city: randomCity,
+					state: randomCity,
+					zipCode: randomZipCode,
 					addressType: "home",
 					isDefault: true,
 				});
@@ -96,16 +108,17 @@ export const initializeTestAccounts = async () => {
 				await consumer.addDeliveryAddress(deliveryAddress);
 
 				// Create a test payment method for consumer
+				const allowedCardTypes = ["visa", "mastercard", "amex", "discover"];
 				await consumer.addPaymentMethod({
 					type: "credit_card",
 					isDefault: true,
 					processor: "stripe",
 					processorToken: `tok_test_${Math.random().toString(36).substring(7)}`,
 					displayInfo: {
-						lastFourDigits: "4242",
-						cardType: "visa",
-						expiryMonth: 12,
-						expiryYear: new Date().getFullYear() + 1,
+						lastFourDigits: creditCardNumber.slice(-4),
+						cardType: faker.helpers.arrayElement(allowedCardTypes),
+						expiryMonth: expiryDate.getMonth() + 1,
+						expiryYear: expiryDate.getFullYear(),
 					},
 					billingAddress: deliveryAddress._id,
 				});
@@ -120,6 +133,9 @@ export const initializeTestAccounts = async () => {
 			let farmer = await Farmer.findOne({ email: farmerData.email });
 			if (!farmer) {
 				const hashedPassword = await bcryptjs.hash(farmerData.password, 10);
+				// Generate random name and phone
+				const randomName = faker.person.fullName();
+				const randomPhone = faker.phone.number({ country: 'DE', type: 'mobile' });
 
 				// Create farm location address
 				const farmLocation = await Address.create({
@@ -133,6 +149,8 @@ export const initializeTestAccounts = async () => {
 				// Create farmer with farm location
 				farmer = await Farmer.create({
 					...farmerData,
+					name: randomName,
+					phone: randomPhone,
 					password: hashedPassword,
 					farmLocation: farmLocation._id,
 				});

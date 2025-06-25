@@ -340,3 +340,19 @@ app.get('/api/images/:filename', async (req, res) => {
 - Swagger Port for Dev instead of Postman(?)
 - Think about how to manage profile images and product images
 - Sharp Integration for Image Uploads
+
+## [0.1.11.5] - 2025-06-25
+
+### Added
+
+
+### Changed
+- Modified or mgirated dummy data to use faker.js
+### Fixed
+
+### Todo 
+- Make API Endpoint for everything that exists (DHK)
+- Review Composition and association relationship (DHK)
+- Swagger Port for Dev instead of Postman(?)
+- Think about how to manage profile images and product images
+- Sharp Integration for Image Uploads
