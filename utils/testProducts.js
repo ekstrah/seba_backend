@@ -2,6 +2,7 @@ import { Category } from "../models/category.model.js";
 import { Farmer } from "../models/farmer.model.js";
 import { Product } from "../models/product.model.js";
 import logger from "./logger.js";
+import { faker } from '@faker-js/faker';
 
 /**
  * Extracts all farmers information from the database
@@ -91,20 +92,25 @@ export const initializeTestProducts = async () => {
 		// Create products for each farmer-category combination
 		for (const farmer of farmers) {
 			for (const category of categories) {
-				const product = {
-					name: `${farmer.farmName} ${category.name}`,
-					description: `${farmer.farmName} ${category.name}`,
-					price: await generateRandomPrice(),
-					stock: 100,
-					imagePath: "/to/image.jpg",
-					harvestDate: "2024-03-20",
-					expiryDate: "2024-04-20",
-					certType: "organic",
-					farmingMethod: "organic",
-					category: category.id,
-					farmer: farmer.id,
-				};
-				products.push(product);
+				// Generate a random number of products per farmer-category
+				const numProducts = faker.number.int({ min: 5, max: 10 });
+				for (let i = 0; i < numProducts; i++) {
+					const product = {
+						name: `${farmer.farmName} ${category.name} ${faker.string.alphanumeric(5)}`,
+						description: faker.commerce.productDescription(),
+						price: parseFloat(faker.commerce.price({ min: 1, max: 100, dec: 2 })),
+						stock: faker.number.int({ min: 10, max: 200 }),
+						imagePath: faker.image.urlPicsumPhotos({ width: 400, height: 400 }),
+						harvestDate: faker.date.past({ years: 1 }).toISOString().split('T')[0],
+						expiryDate: faker.date.future({ years: 1 }).toISOString().split('T')[0],
+						certType: faker.helpers.arrayElement(['organic', 'conventional', 'hydroponic']),
+						farmingMethod: faker.helpers.arrayElement(['organic', 'hydroponic', 'permaculture']),
+						category: category.id,
+						farmer: farmer.id,
+						processorToken: `tok_test_${faker.string.alphanumeric(10)}`,
+					};
+					products.push(product);
+				}
 			}
 		}
 		// Insert all products at once
