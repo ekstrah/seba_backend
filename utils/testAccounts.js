@@ -122,8 +122,6 @@ export const initializeTestAccounts = async () => {
 					},
 					billingAddress: deliveryAddress._id,
 				});
-
-				console.log(`Test consumer account created for ${consumerData.email}`);
 			}
 			createdAccounts.consumers.push(consumer);
 		}
@@ -154,8 +152,6 @@ export const initializeTestAccounts = async () => {
 					password: hashedPassword,
 					farmLocation: farmLocation._id,
 				});
-
-				console.log(`Test farmer account created for ${farmerData.email}`);
 			}
 			createdAccounts.farmers.push(farmer);
 		}

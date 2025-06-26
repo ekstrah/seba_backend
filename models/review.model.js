@@ -66,6 +66,51 @@ reviewSchema.index({ createdAt: -1 });
 reviewSchema.index({ type: 1, farmer: 1 });
 reviewSchema.index({ type: 1, product: 1 });
 
+// Helper function to recalculate and update rating
+async function recalculateRating(review) {
+	// Dynamically import models to avoid circular dependencies
+	const { default: Review } = await import('./review.model.js');
+	const { Product } = await import('./product.model.js');
+	const { Farmer } = await import('./farmer.model.js');
+
+	let model, idField, idValue;
+	if (review.type === 'product') {
+		model = Product;
+		idField = 'product';
+		idValue = review.product;
+	} else {
+		model = Farmer;
+		idField = 'farmer';
+		idValue = review.farmer;
+	}
+
+	// Get all reviews for this product or farmer
+	const allReviews = await Review.find({ type: review.type, [idField]: idValue });
+	const count = allReviews.length;
+	const average = count === 0 ? 0 : allReviews.reduce((sum, r) => sum + r.rating, 0) / count;
+
+	// Update the product or farmer
+	await model.findByIdAndUpdate(
+		idValue,
+		{
+			rating: { average: Number(average.toFixed(1)), count },
+			reviews: allReviews.map(r => r._id)
+		}
+	);
+}
+
+// Recalculate after save (insert/update)
+reviewSchema.post('save', async function (doc, next) {
+	await recalculateRating(doc);
+	next();
+});
+
+// Recalculate after remove (delete)
+reviewSchema.post('remove', async function (doc, next) {
+	await recalculateRating(doc);
+	next();
+});
+
 const Review = mongoose.model("Review", reviewSchema);
 
 export default Review;
