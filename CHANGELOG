@@ -362,7 +362,7 @@ app.get('/api/images/:filename', async (req, res) => {
 
 ### Added
 - Added Corresponding Review Ratings
-
+- Product related added endpoint
 ### Changed
 
 ### Fixed

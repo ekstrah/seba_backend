@@ -99,6 +99,10 @@ export const oFind = async (req, res) => {
 		if (minPrice) query.price.$gte = Number(minPrice);
 		if (maxPrice) query.price.$lte = Number(maxPrice);
 	}
+	// Add rating filter
+	if (req.query.rating) {
+		query["rating.average"] = { $gte: Number(req.query.rating) };
+	}
 	try {
 		const skip = (page - 1) * limit;
 
@@ -320,6 +324,26 @@ export const getProductById = async (req, res) => {
 		}
 		res.status(200).json({ success: true, product });
 	} catch (error) {
+		res.status(500).json({ success: false, message: "Server error" });
+	}
+};
+
+export const getRelatedProducts = async (req, res) => {
+	try {
+		const { productId } = req.params;
+		const product = await Product.findById(productId);
+		if (!product) {
+			return res.status(404).json({ success: false, message: "Product not found" });
+		}
+		const relatedProducts = await Product.find({
+			category: product.category,
+			_id: { $ne: productId },
+		})
+		.sort({ "rating.average": -1 })
+		.limit(8);
+		res.status(200).json({ success: true, products: relatedProducts });
+	} catch (error) {
+		console.error("Error in getRelatedProducts:", error);
 		res.status(500).json({ success: false, message: "Server error" });
 	}
 };

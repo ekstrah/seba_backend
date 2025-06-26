@@ -7,6 +7,7 @@ import {
 	getProductById,
 	oFind,
 	oGetAll,
+	getRelatedProducts,
 } from "../controllers/product.controller.js";
 import { verifyProductOwnership } from "../middleware/product.middleware.js";
 import { verifyToken } from "../middleware/verifyToken.js";
@@ -16,6 +17,7 @@ const router = express.Router();
 // Public routes
 router.get("/", oGetAll);
 router.get("/search", oFind);
+router.get("/:productId/related", getRelatedProducts);
 router.get("/:id", getProductById);
 
 // Protected routes (require authentication)
