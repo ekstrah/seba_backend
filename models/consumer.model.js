@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import { Address } from "./address.model.js";
 import { Cart } from "./cart.model.js";
-import { PaymentMethod } from "./paymentMethod.model.js";
 import { User } from "./user.model.js";
 
 // Consumer-specific schema that extends User
@@ -17,12 +16,6 @@ const consumerSchema = new mongoose.Schema(
 			{
 				type: mongoose.Schema.Types.ObjectId,
 				ref: "Address",
-			},
-		],
-		paymentMethods: [
-			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: "PaymentMethod",
 			},
 		],
 		// wishlist: [{
@@ -41,6 +34,11 @@ const consumerSchema = new mongoose.Schema(
 			type: String,
 			enum: ["regular", "silver", "gold", "platinum"],
 			default: "regular",
+		},
+		stripeCustomerId: {
+			type: String,
+			default: null,
+			index: true,
 		},
 	},
 	{
@@ -106,47 +104,6 @@ consumerSchema.methods.setDefaultAddress = async function (addressId) {
 
 	// Then set the new default
 	await Address.findByIdAndUpdate(addressId, { isDefault: true });
-	return this.save();
-};
-
-// Helper methods for payment method management
-consumerSchema.methods.addPaymentMethod = async function (paymentMethodData) {
-	const paymentMethod = await PaymentMethod.create({
-		...paymentMethodData,
-		consumer: this._id,
-	});
-	this.paymentMethods.push(paymentMethod._id);
-	return this.save();
-};
-
-consumerSchema.methods.removePaymentMethod = async function (paymentMethodId) {
-	this.paymentMethods = this.paymentMethods.filter(
-		(pm) => pm.toString() !== paymentMethodId.toString(),
-	);
-	await PaymentMethod.findByIdAndDelete(paymentMethodId);
-	return this.save();
-};
-
-consumerSchema.methods.getDefaultPaymentMethod = async function () {
-	return await PaymentMethod.findOne({
-		_id: { $in: this.paymentMethods },
-		isDefault: true,
-		isActive: true,
-	});
-};
-
-consumerSchema.methods.setDefaultPaymentMethod = async function (
-	paymentMethodId,
-) {
-	await PaymentMethod.updateMany(
-		{
-			_id: { $in: this.paymentMethods },
-			isDefault: true,
-		},
-		{ isDefault: false },
-	);
-
-	await PaymentMethod.findByIdAndUpdate(paymentMethodId, { isDefault: true });
 	return this.save();
 };
 

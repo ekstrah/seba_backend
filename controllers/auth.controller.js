@@ -10,6 +10,7 @@ import { Consumer } from "../models/consumer.model.js";
 import { Farmer } from "../models/farmer.model.js";
 import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
+import stripe from '../utils/stripe.js';
 
 export const signup = async (req, res) => {
 	const { email, password, name, phone, role } = req.body;
@@ -37,6 +38,13 @@ export const signup = async (req, res) => {
 
 		// Create user based on role
 		if (role === "consumer") {
+			// Create Stripe customer for consumer
+			const stripeCustomer = await stripe.customers.create({
+				email,
+				name,
+				phone,
+			});
+
 			user = new Consumer({
 				email,
 				password: hashedPassword,
@@ -45,6 +53,7 @@ export const signup = async (req, res) => {
 				role,
 				verificationToken,
 				verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+				stripeCustomerId: stripeCustomer.id,
 			});
 		} else if (role === "farmer") {
 			const { farmName, introduction, farmLocation } = req.body;

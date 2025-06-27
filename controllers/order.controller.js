@@ -2,22 +2,22 @@ import { Cart } from "../models/cart.model.js";
 import { CartItem } from "../models/cartItem.model.js";
 import { Order } from "../models/order.model.js";
 import { OrderItem } from "../models/orderItem.model.js";
-import { PaymentMethod } from "../models/paymentMethod.model.js";
 import { Product } from "../models/product.model.js";
 import { sendEmail } from '../utils/email.js';
 import { sendTestEmail } from './email.controller.js';
+import stripe from '../utils/stripe.js';
+import { Consumer } from '../models/consumer.model.js';
 
 // Create a new order
 export const createOrder = async (req, res) => {
 	try {
-		const { orderItems, shippingAddress, paymentMethod, notes } = req.body;
+		const { orderItems, shippingAddress, notes, stripePaymentMethodId } = req.body;
 
 		// Validate required fields
-		if (!orderItems || !shippingAddress || !paymentMethod) {
+		if (!orderItems || !shippingAddress || !stripePaymentMethodId) {
 			return res.status(400).json({
 				success: false,
-				message:
-					"Order items, shipping address, and payment method are required",
+				message: "Order items, shipping address, and Stripe payment method ID are required",
 			});
 		}
 
@@ -28,14 +28,38 @@ export const createOrder = async (req, res) => {
 			0,
 		);
 
-		// Create new order
+		// Find the consumer and get their Stripe customer ID
+		const consumer = await Consumer.findById(req.userId);
+		if (!consumer || !consumer.stripeCustomerId) {
+			return res.status(404).json({ success: false, message: "Consumer or Stripe customer not found" });
+		}
+
+		// Create a PaymentIntent with Stripe
+		const paymentIntent = await stripe.paymentIntents.create({
+			amount: Math.round(totalAmount * 100), // amount in cents
+			currency: 'usd',
+			customer: consumer.stripeCustomerId,
+			payment_method: stripePaymentMethodId,
+			off_session: false,
+			confirm: true,
+			metadata: {
+				consumerId: consumer._id.toString(),
+			},
+		});
+
+		// Create new order, store PaymentIntent ID
 		const order = new Order({
-			consumer: req.userId, // From auth middleware
+			consumer: req.userId,
 			orderItems,
 			totalAmount,
 			shippingAddress,
-			paymentMethod,
 			notes,
+			paymentDetails: {
+				transactionId: paymentIntent.id,
+				status: paymentIntent.status,
+			},
+			status: 'pending',
+			paymentStatus: 'pending',
 		});
 
 		await order.save();
@@ -43,19 +67,19 @@ export const createOrder = async (req, res) => {
 		// Populate order details
 		await order.populate([
 			{ path: "orderItems", populate: { path: "product" } },
-			{ path: "paymentMethod" },
 		]);
 
 		res.status(201).json({
 			success: true,
-			message: "Order created successfully",
+			message: "Order created and payment initiated",
 			order,
+			paymentIntentStatus: paymentIntent.status,
 		});
 	} catch (error) {
 		console.error("Error in createOrder:", error);
 		res.status(500).json({
 			success: false,
-			message: "Server error",
+			message: error.message,
 		});
 	}
 };
@@ -70,7 +94,6 @@ export const getAllOrders = async (req, res) => {
 		const orders = await Order.find()
 			.populate([
 				{ path: "orderItems", populate: { path: "product" } },
-				{ path: "paymentMethod" },
 			])
 			.sort({ createdAt: -1 })
 			.skip(skip)
@@ -104,7 +127,6 @@ export const getOrderById = async (req, res) => {
 
 		const order = await Order.findById(id).populate([
 			{ path: "orderItems", populate: { path: "product" } },
-			{ path: "paymentMethod" },
 		]);
 
 		if (!order) {
@@ -221,7 +243,6 @@ export const getOrdersByConsumer = async (req, res) => {
 		const orders = await Order.find({ consumer: req.userId })
 			.populate([
 				{ path: "orderItems", populate: { path: "product" } },
-				{ path: "paymentMethod" },
 			])
 			.sort({ createdAt: -1 })
 			.skip(skip)
@@ -334,7 +355,6 @@ export const createOrderFromCart = async (req, res) => {
 			consumer: req.userId,
 			totalAmount: cart.totalAmount,
 			shippingAddress: shippingAddressId,
-			paymentMethod: paymentMethodId,
 			status: "pending",
 			paymentStatus: "pending",
 			paymentDetails: {
@@ -396,7 +416,6 @@ export const createOrderFromCart = async (req, res) => {
 		await order.populate([
 			{ path: "orderItems", populate: { path: "product" } },
 			{ path: "shippingAddress" },
-			{ path: "paymentMethod" },
 		]);
 
 		res.status(201).json({
@@ -502,7 +521,6 @@ export const getOrdersByFarmer = async (req, res) => {
 					model: "User",
 				},
 				{ path: "shippingAddress" },
-				{ path: "paymentMethod" },
 			])
 			.sort({ createdAt: -1 })
 			.skip(skip)

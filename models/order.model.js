@@ -43,11 +43,6 @@ const orderSchema = new mongoose.Schema(
 			],
 			default: "pending",
 		},
-		paymentMethod: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: "PaymentMethod",
-			required: true,
-		},
 		paymentDetails: {
 			transactionId: String,
 			paymentDate: Date,
@@ -93,7 +88,6 @@ orderSchema.index({ consumer: 1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ paymentStatus: 1 });
-orderSchema.index({ paymentMethod: 1 });
 
 // Pre-save middleware to capture payment method snapshot
 orderSchema.pre("save", async function (next) {

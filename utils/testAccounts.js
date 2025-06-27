@@ -106,22 +106,6 @@ export const initializeTestAccounts = async () => {
 
 				// Add the address to consumer's delivery addresses
 				await consumer.addDeliveryAddress(deliveryAddress);
-
-				// Create a test payment method for consumer
-				const allowedCardTypes = ["visa", "mastercard", "amex", "discover"];
-				await consumer.addPaymentMethod({
-					type: "credit_card",
-					isDefault: true,
-					processor: "stripe",
-					processorToken: `tok_test_${Math.random().toString(36).substring(7)}`,
-					displayInfo: {
-						lastFourDigits: creditCardNumber.slice(-4),
-						cardType: faker.helpers.arrayElement(allowedCardTypes),
-						expiryMonth: expiryDate.getMonth() + 1,
-						expiryYear: expiryDate.getFullYear(),
-					},
-					billingAddress: deliveryAddress._id,
-				});
 			}
 			createdAccounts.consumers.push(consumer);
 		}

@@ -8,7 +8,6 @@ const CartItem = require("./cartItem.model");
 const Order = require("./order.model");
 const OrderItem = require("./orderItem.model");
 const Address = require("./address.model");
-const PaymentMethod = require("./paymentMethod.model");
 const Review = require("./review.model");
 
 module.exports = {
@@ -22,6 +21,5 @@ module.exports = {
 	Order,
 	OrderItem,
 	Address,
-	PaymentMethod,
 	Review,
 };
