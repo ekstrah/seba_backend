@@ -2,7 +2,6 @@ import { sendEmail, renderTemplate } from '../utils/email.js';
 
 // Send test email
 export const sendTestEmail = async (req, res) => {
-  console.log("BODY RECEIVED:", req.body); // Debug log
   try {
     const { to, name } = req.body;
     if (!to) {
