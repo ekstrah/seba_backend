@@ -1,4 +1,4 @@
-import { sendEmail } from '../utils/email.js';
+import { sendEmail, renderTemplate } from '../utils/email.js';
 
 // Send test email
 export const sendTestEmail = async (req, res) => {
@@ -8,27 +8,12 @@ export const sendTestEmail = async (req, res) => {
     if (!to) {
       return res.status(400).json({ success: false, message: 'Recipient email (to) is required' });
     }
-    // Simple MJML template inline for test
-    const mjml = `
-      <mjml>
-        <mj-body>
-          <mj-section>
-            <mj-column>
-              <mj-text font-size="20px" color="#333">Hello${name ? ', ' + name : ''}!</mj-text>
-              <mj-text>This is a test email from your backend using nodemailer-mjml.</mj-text>
-              <mj-divider border-color="#F45E43" />
-              <mj-text>If you received this, your email setup works!</mj-text>
-            </mj-column>
-          </mj-section>
-        </mj-body>
-      </mjml>
-    `;
+    const html = await renderTemplate('testEmail', { name });
     await sendEmail({
       from: process.env.SMTP_USER,
       to,
       subject: 'Test Email from Your Backend',
-      mjml,
-      context: { name: name || '' },
+      html,
     });
     res.json({ success: true, message: `Test email sent to ${to}` });
   } catch (error) {

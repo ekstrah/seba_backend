@@ -381,6 +381,7 @@ app.get('/api/images/:filename', async (req, res) => {
 
 ### Added
 - Custom Mail Controller
+- MJML templates for sending email
 
 ### Changed
 - Migrating from testmail to nodemail with mnml template

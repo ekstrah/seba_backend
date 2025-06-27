@@ -1,6 +1,6 @@
 {
 	"name": "backend",
-	"version": "0.1.11.4",
+	"version": "0.1.12.0",
 	"main": "server.js",
 	"scripts": {
 		"test:newman": "newman run ./tests/postman/FresichFarm.postman_collection.json",
@@ -22,6 +22,7 @@
 		"express": "^5.1.0",
 		"jsonwebtoken": "^9.0.2",
 		"mailtrap": "^4.1.0",
+		"mjml": "^4.15.3",
 		"mongoose": "^8.15.1",
 		"morgan": "^1.10.0",
 		"nodemon": "^3.1.10",

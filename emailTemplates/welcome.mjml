@@ -1,0 +1,84 @@
+<mjml>
+  <mj-head>
+    <mj-title>Fresh From The Farm!</mj-title>
+    <mj-preview>Your weekly harvest from local farmers is here.</mj-preview>
+    <mj-font name="Lato" href="https://fonts.googleapis.com/css?family=Lato:300,400,500,700" />
+    <mj-style>
+      .body-section {
+        -webkit-box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.1);
+        -moz-box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.1);
+        box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.1);
+      }
+    </mj-style>
+    <mj-attributes>
+      <mj-all font-family="Lato, Helvetica, Arial, sans-serif" />
+      <mj-text font-size="16px" line-height="1.5" color="#333333" />
+      <mj-section background-color="#ffffff" padding="20px 0" />
+      <mj-column padding="0 25px" />
+      <mj-button background-color="#22c55e" color="#ffffff" font-size="18px" font-weight="bold" border-radius="8px" padding="15px 30px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f0fdf4">
+    <!-- Header Section with Logo -->
+    <mj-section css-class="body-section">
+      <mj-column>
+        <mj-image width="180px" src="https://placehold.co/180x60/166534/FFFFFF?text=LocalHarvest" alt="LocalHarvest Logo" />
+      </mj-column>
+    </mj-section>
+
+    <!-- Hero Image Section -->
+    <mj-section css-class="body-section" padding="0">
+      <mj-column padding="0">
+        <mj-image src="https://placehold.co/600x300/65a30d/FFFFFF?text=Fresh+From+The+Farm" alt="Basket of fresh vegetables" fluid-on-mobile="true" padding="0" />
+      </mj-column>
+    </mj-section>
+
+    <!-- Main Content Section -->
+    <mj-section css-class="body-section">
+      <mj-column>
+        <mj-text align="center" font-size="26px" font-weight="bold" color="#166534">
+          <h1>This Week's Freshest Picks</h1>
+        </mj-text>
+        <mj-text>
+          <p>Hello fresh food lover,</p>
+          <p>Get the best of the season delivered straight from the fields to your table. Explore this week's harvest from our partner farms and taste the difference of locally grown, fresh produce.</p>
+        </mj-text>
+        <mj-button href="https://example.com" align="center">
+          Shop What's in Season
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- 3-Column Product Section -->
+    <mj-section css-class="body-section" padding-bottom="20px">
+      <mj-column>
+        <mj-image width="150px" src="https://placehold.co/150x150/ef4444/ffffff?text=Tomatoes" alt="Heirloom Tomatoes" border-radius="10px" />
+        <mj-text align="center" font-weight="bold" color="#18181b">Heirloom Tomatoes</mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-image width="150px" src="https://placehold.co/150x150/f97316/ffffff?text=Carrots" alt="Organic Carrots" border-radius="10px" />
+        <mj-text align="center" font-weight="bold" color="#18181b">Organic Carrots</mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-image width="150px" src="https://placehold.co/150x150/22c55e/ffffff?text=Lettuce" alt="Crisp Lettuce" border-radius="10px" />
+        <mj-text align="center" font-weight="bold" color="#18181b">Crisp Lettuce</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer Section -->
+    <mj-section>
+      <mj-column>
+        <mj-social font-size="15px" icon-size="24px" mode="horizontal">
+          <mj-social-element name="facebook" href="https://mjml.io/"></mj-social-element>
+          <mj-social-element name="instagram" href="https://mjml.io/"></mj-social-element>
+          <mj-social-element name="twitter" href="https://mjml.io/"></mj-social-element>
+        </mj-social>
+        <mj-text align="center" font-size="12px" line-height="1.5" color="#555555">
+          <p>You received this email because you signed up for updates from the farm. <br /> © 2024 LocalHarvest Inc. All rights reserved.</p>
+          <p><a href="#" style="color: #555555; text-decoration: underline;">Unsubscribe</a> | <a href="#" style="color: #555555; text-decoration: underline;">Manage Preferences</a></p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+  </mj-body>
+</mjml>
