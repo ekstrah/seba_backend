@@ -1,4 +1,6 @@
 import { User } from "../models/user.model.js";
+import { Consumer } from "../models/consumer.model.js";
+import stripe from "../utils/stripe.js";
 
 // Update user contact information
 export const updateContactInfo = async (req, res) => {
@@ -73,6 +75,36 @@ export const getContactInfo = async (req, res) => {
 		});
 	} catch (error) {
 		console.error("Error in getContactInfo:", error);
+		res.status(500).json({
+			success: false,
+			message: "Server error",
+		});
+	}
+};
+
+// List saved Stripe payment methods for the authenticated consumer
+export const listPaymentMethods = async (req, res) => {
+	try {
+		const userId = req.userId;
+		// Find the consumer by userId
+		const consumer = await Consumer.findById(userId);
+		if (!consumer || !consumer.stripeCustomerId) {
+			return res.status(404).json({
+				success: false,
+				message: "No Stripe customer found for this user."
+			});
+		}
+		// List payment methods from Stripe
+		const paymentMethods = await stripe.paymentMethods.list({
+			customer: consumer.stripeCustomerId,
+			type: 'card',
+		});
+		res.status(200).json({
+			success: true,
+			paymentMethods: paymentMethods.data,
+		});
+	} catch (error) {
+		console.error("Error in listPaymentMethods:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",

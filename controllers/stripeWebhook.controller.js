@@ -25,4 +25,33 @@ export const stripeWebhook = async (req, res) => {
   // Add more event types as needed
 
   res.json({ received: true });
+};
+
+// Create a SetupIntent for saving a card
+export const createSetupIntent = async (req, res) => {
+  console.log('createSetupIntent endpoint was called');
+  try {
+    const { Consumer } = await import('../models/consumer.model.js');
+    let consumer = await Consumer.findById(req.userId);
+    if (!consumer) {
+      return res.status(404).json({ success: false, message: "Consumer not found" });
+    }
+    // If the user does not have a Stripe customer, create one
+    if (!consumer.stripeCustomerId) {
+      const stripeCustomer = await stripe.customers.create({
+        email: consumer.email,
+        name: consumer.name,
+        phone: consumer.phone,
+      });
+      consumer.stripeCustomerId = stripeCustomer.id;
+      await consumer.save();
+    }
+    const setupIntent = await stripe.setupIntents.create({
+      customer: consumer.stripeCustomerId,
+    });
+    res.json({ clientSecret: setupIntent.client_secret });
+  } catch (error) {
+    console.error("Error in createSetupIntent:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
 }; 
