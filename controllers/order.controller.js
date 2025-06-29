@@ -443,12 +443,9 @@ export const createOrderFromCart = async (req, res) => {
 		order.orderItems = orderItems;
 		await order.save();
 
-		// Clear cart
+		// Delete cart and its items
 		await CartItem.deleteMany({ _id: { $in: cart.items } });
-		cart.items = [];
-		cart.totalAmount = 0;
-		cart.status = "converted";
-		await cart.save();
+		await Cart.findByIdAndDelete(cart._id);
 
 		// Populate order details
 		await order.populate([
