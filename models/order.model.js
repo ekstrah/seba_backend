@@ -56,7 +56,7 @@ const orderSchema = new mongoose.Schema(
 			paymentMethodSnapshot: {
 				type: {
 					type: String,
-					enum: ["credit_card", "debit_card", "bank_account"],
+					enum: ["credit_card", "debit_card", "bank_account", "card"],
 					required: true,
 				},
 				processor: {

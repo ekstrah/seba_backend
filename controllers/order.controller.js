@@ -27,6 +27,7 @@ export const createOrder = async (req, res) => {
 			(sum, item) => sum + item.subtotal,
 			0,
 		);
+		console.log('DEBUG: totalAmount (EUR):', totalAmount, 'amount (cents):', Math.round(totalAmount * 100));
 
 		// Find the consumer and get their Stripe customer ID
 		const consumer = await Consumer.findById(req.userId);
@@ -37,15 +38,22 @@ export const createOrder = async (req, res) => {
 		// Create a PaymentIntent with Stripe
 		const paymentIntent = await stripe.paymentIntents.create({
 			amount: Math.round(totalAmount * 100), // amount in cents
-			currency: 'usd',
+			currency: 'eur',
 			customer: consumer.stripeCustomerId,
 			payment_method: stripePaymentMethodId,
 			off_session: false,
 			confirm: true,
+			automatic_payment_methods: {
+				enabled: true,
+				allow_redirects: 'never'
+			},
 			metadata: {
 				consumerId: consumer._id.toString(),
 			},
 		});
+
+		// Fetch payment method details from Stripe for snapshot
+		const paymentMethod = await stripe.paymentMethods.retrieve(stripePaymentMethodId);
 
 		// Create new order, store PaymentIntent ID
 		const order = new Order({
@@ -57,6 +65,17 @@ export const createOrder = async (req, res) => {
 			paymentDetails: {
 				transactionId: paymentIntent.id,
 				status: paymentIntent.status,
+				paymentMethodSnapshot: paymentMethod && paymentMethod.card ? {
+					type: paymentMethod.type,
+					processor: 'stripe',
+					processorToken: paymentMethod.id,
+					displayInfo: {
+						lastFourDigits: paymentMethod.card.last4,
+						cardType: paymentMethod.card.brand,
+						expiryMonth: paymentMethod.card.exp_month,
+						expiryYear: paymentMethod.card.exp_year,
+					},
+				} : undefined,
 			},
 			status: 'pending',
 			paymentStatus: 'pending',
@@ -336,19 +355,31 @@ export const createOrderFromCart = async (req, res) => {
 			});
 		}
 
-		// Verify payment method
-		const paymentMethod = await PaymentMethod.findOne({
-			_id: paymentMethodId,
-			consumer: req.userId,
-			isActive: true,
+		// Find the consumer and get their Stripe customer ID
+		const consumer = await Consumer.findById(req.userId);
+		if (!consumer || !consumer.stripeCustomerId) {
+			return res.status(404).json({ success: false, message: "Consumer or Stripe customer not found" });
+		}
+
+		// Create a PaymentIntent with Stripe
+		const paymentIntent = await stripe.paymentIntents.create({
+			amount: Math.round(cart.totalAmount * 100), // amount in cents
+			currency: 'eur',
+			customer: consumer.stripeCustomerId,
+			payment_method: paymentMethodId,
+			off_session: false,
+			confirm: true,
+			automatic_payment_methods: {
+				enabled: true,
+				allow_redirects: 'never'
+			},
+			metadata: {
+				consumerId: consumer._id.toString(),
+			},
 		});
 
-		if (!paymentMethod) {
-			return res.status(400).json({
-				success: false,
-				message: "Invalid payment method",
-			});
-		}
+		// Fetch payment method details from Stripe for snapshot
+		const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
 
 		// Create order first
 		const order = new Order({
@@ -358,18 +389,25 @@ export const createOrderFromCart = async (req, res) => {
 			status: "pending",
 			paymentStatus: "pending",
 			paymentDetails: {
-				paymentMethodSnapshot: {
+				transactionId: paymentIntent.id,
+				status: paymentIntent.status,
+				paymentMethodSnapshot: paymentMethod && paymentMethod.card ? {
 					type: paymentMethod.type,
-					processor: paymentMethod.processor,
-					processorToken: paymentMethod.processorToken,
-					displayInfo: paymentMethod.displayInfo,
-				},
+					processor: 'stripe',
+					processorToken: paymentMethod.id,
+					displayInfo: {
+						lastFourDigits: paymentMethod.card.last4,
+						cardType: paymentMethod.card.brand,
+						expiryMonth: paymentMethod.card.exp_month,
+						expiryYear: paymentMethod.card.exp_year,
+					},
+				} : undefined,
 			},
 		});
 
 		await order.save();
 
-		// Create order items from cart items
+		// Create order items 
 		const orderItems = [];
 		for (const cartItem of cart.items) {
 			// Check product availability
@@ -420,14 +458,15 @@ export const createOrderFromCart = async (req, res) => {
 
 		res.status(201).json({
 			success: true,
-			message: "Order created successfully",
+			message: "Order created and payment initiated",
 			order,
+			paymentIntentStatus: paymentIntent.status,
 		});
 	} catch (error) {
 		console.error("Error in createOrderFromCart:", error);
 		res.status(500).json({
 			success: false,
-			message: "Server error",
+			message: error.message,
 		});
 	}
 };
