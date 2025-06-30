@@ -677,38 +677,61 @@ export const updateOrderItemStatus = async (req, res) => {
 // Create guest order
 export const createGuestOrder = async (req, res) => {
 	try {
-		const { cartItems: guestCartItems, shippingAddress: guestShippingAddress, contactInfo: guestContactInfo, notes: guestNotes, payment: guestPayment } = req.body;
-		if (!guestCartItems || !Array.isArray(guestCartItems) || guestCartItems.length === 0) {
+		console.log("createGuestOrder request body:", req.body); // Log the incoming request body
+		const { cartItems, shippingAddress, contactInfo, notes, payment } = req.body;
+		if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+			console.log("Missing or invalid cartItems");
 			return res.status(400).json({ success: false, message: "Cart items are required" });
 		}
-		if (!guestShippingAddress || !guestContactInfo) {
+		if (!shippingAddress || !contactInfo) {
+			console.log("Missing shippingAddress or contactInfo");
 			return res.status(400).json({ success: false, message: "Shipping address and contact info are required" });
 		}
-		// Validate contact info
-		if (!guestContactInfo.name || !guestContactInfo.email) {
+		if (!contactInfo.name || !contactInfo.email) {
+			console.log("Missing guest name or email");
 			return res.status(400).json({ success: false, message: "Name and email are required for guest checkout" });
-		}
-		// Validate payment (for demo)
-		if (guestPayment && guestPayment.type === 'card') {
-			if (!guestPayment.cardNumber || !guestPayment.expiry || !guestPayment.cvc) {
-				return res.status(400).json({ success: false, message: 'Incomplete card info' });
-			}
 		}
 		// Check product availability and calculate total
 		let totalAmount = 0;
-		for (const item of guestCartItems) {
+		for (const item of cartItems) {
 			const product = await Product.findById(item.productId);
 			if (!product || product.quantity < item.quantity) {
 				return res.status(400).json({ success: false, message: `Insufficient quantity for product: ${product ? product.name : item.productId}` });
 			}
 			totalAmount += (item.unitPrice || product.price) * item.quantity;
 		}
-		// Create order items
+		// Create guest address document
+		const { street, city, state, zipCode, country, addressType, additionalInfo } = shippingAddress;
+		const guestAddress = new (await import('../models/address.model.js')).Address({
+			street,
+			city,
+			state,
+			zipCode,
+			country,
+			addressType,
+			additionalInfo,
+			isGuest: true,
+		});
+		await guestAddress.save();
+		// Create order (no consumer field yet, and no orderItems yet)
+		const order = new Order({
+			orderItems: [],
+			totalAmount,
+			shippingAddress: guestAddress._id,
+			contactInfo,
+			notes,
+			payment, // Store the payment object for demo
+			status: "pending",
+			paymentStatus: "pending",
+			isGuest: true,
+		});
+		await order.save();
+		// Create order items, linking to the order
 		const orderItemIds = [];
-		for (const item of guestCartItems) {
+		for (const item of cartItems) {
 			const product = await Product.findById(item.productId);
-			// Create order item
 			const orderItem = new OrderItem({
+				order: order._id,
 				product: item.productId,
 				quantity: item.quantity,
 				unitPrice: item.unitPrice || product.price,
@@ -722,29 +745,44 @@ export const createGuestOrder = async (req, res) => {
 			product.quantity -= item.quantity;
 			await product.save();
 		}
-		// Create order (no consumer field)
-		const order = new Order({
-			orderItems: orderItemIds,
-			totalAmount,
-			shippingAddress: guestShippingAddress,
-			contactInfo: guestContactInfo,
-			notes: guestNotes,
-			payment: guestPayment, // Store the payment object for demo
-			status: "pending",
-			paymentStatus: "pending",
-			isGuest: true,
-		});
+		// Update order with order item IDs
+		order.orderItems = orderItemIds;
 		await order.save();
 		await order.populate([
 			{ path: "orderItems", populate: { path: "product" } },
+			{ path: "shippingAddress" },
 		]);
+		console.log("Guest order created successfully:", order);
 		res.status(201).json({
 			success: true,
 			message: "Order placed successfully as guest!",
 			order,
 		});
 	} catch (error) {
+		if (error.name === 'ValidationError' || error.code === 11000) {
+			console.error("Validation error in createGuestOrder:", error);
+			return res.status(400).json({ success: false, message: error.message, error });
+		}
 		console.error("Error in createGuestOrder:", error);
 		res.status(500).json({ success: false, message: "Server error" });
+	}
+};
+
+// Guest payment intent for guest checkout
+export const guestPaymentIntent = async (req, res) => {
+	try {
+		const { amount, currency = 'eur' } = req.body;
+		if (!amount || isNaN(amount) || amount <= 0) {
+			return res.status(400).json({ error: 'Valid amount is required' });
+		}
+		const paymentIntent = await stripe.paymentIntents.create({
+			amount,
+			currency,
+			automatic_payment_methods: { enabled: true },
+		});
+		res.json({ clientSecret: paymentIntent.client_secret });
+	} catch (err) {
+		console.error('Error in guestPaymentIntent:', err);
+		res.status(500).json({ error: err.message });
 	}
 };

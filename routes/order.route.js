@@ -7,6 +7,8 @@ import {
 	getOrdersByConsumer,
 	updateOrderStatus,
 	updatePaymentStatus,
+	guestPaymentIntent,
+	createGuestOrder,
 } from "../controllers/order.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -35,5 +37,11 @@ router.get("/consumer/orders", getOrdersByConsumer);
 
 // Cancel order
 router.post("/:id/cancel", cancelOrder);
+
+// Guest payment intent for guest checkout
+router.post("/guest/payment-intent", guestPaymentIntent);
+
+// Guest order creation after payment
+router.post("/guest/order", createGuestOrder);
 
 export default router;

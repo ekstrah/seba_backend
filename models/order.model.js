@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema(
 		consumer: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "Consumer",
-			required: true,
+			required: false,
 		},
 		orderItems: [
 			{
@@ -57,16 +57,16 @@ const orderSchema = new mongoose.Schema(
 				type: {
 					type: String,
 					enum: ["credit_card", "debit_card", "bank_account", "card"],
-					required: true,
+					required: false,
 				},
 				processor: {
 					type: String,
 					enum: ["stripe", "paypal", "square"],
-					required: true,
+					required: false,
 				},
 				processorToken: {
 					type: String,
-					required: true,
+					required: false,
 				},
 				displayInfo: {
 					lastFourDigits: String,

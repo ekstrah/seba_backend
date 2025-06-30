@@ -6,7 +6,7 @@ const addressSchema = new mongoose.Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "User",
 			required: function () {
-				return this.addressType !== "farm";
+				return this.addressType !== "farm" && !this.isGuest;
 			},
 		},
 		street: {
@@ -49,6 +49,10 @@ const addressSchema = new mongoose.Schema(
 			trim: true,
 			maxlength: 200,
 		},
+		isGuest: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	{
 		timestamps: true,
@@ -58,7 +62,7 @@ const addressSchema = new mongoose.Schema(
 // Compound index for efficient querying - now includes user field
 addressSchema.index(
 	{ user: 1, street: 1, city: 1, state: 1, zipCode: 1 },
-	{ unique: true },
+	{ unique: true, partialFilterExpression: { user: { $type: 'objectId' } } }
 );
 
 // Method to format address as a string

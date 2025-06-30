@@ -11,6 +11,7 @@ import {
 	updateOrderStatus,
 	updatePaymentStatus,
 	createGuestOrder,
+	guestPaymentIntent,
 } from "../controllers/order.controller.js";
 import { sendTestEmail } from "../controllers/email.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
@@ -19,6 +20,12 @@ const router = express.Router();
 
 // Test email endpoint (no auth)
 router.post("/test-email", sendTestEmail);
+
+// Guest payment intent for guest checkout (should be before verifyToken)
+router.post("/guest/payment-intent", guestPaymentIntent);
+
+// Guest order creation for guest checkout (should be before verifyToken)
+router.post("/guest", createGuestOrder);
 
 // Apply authentication middleware to all routes
 router.use(verifyToken);
@@ -52,8 +59,5 @@ router.post("/:id/cancel", cancelOrder);
 
 // Update order item status
 router.patch("/items/:orderItemId/status", updateOrderItemStatus);
-
-// Create guest order
-router.post("/guest", createGuestOrder);
 
 export default router;
