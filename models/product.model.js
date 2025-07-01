@@ -73,6 +73,11 @@ const productSchema = new mongoose.Schema(
 				default: 0,
 			},
 		},
+		measurement: {
+			type: String,
+			enum: ['kg', 'g', 'qty'],
+			required: true,
+		},
 	},
 	{ timestamps: true },
 );

@@ -95,6 +95,12 @@ export const initializeTestProducts = async () => {
 				// Generate a random number of products per farmer-category
 				const numProducts = faker.number.int({ min: 5, max: 10 });
 				for (let i = 0; i < numProducts; i++) {
+					let measurement;
+					if (category.name.toLowerCase() === 'meat') {
+						measurement = 'g';
+					} else {
+						measurement = faker.helpers.arrayElement(['kg', 'g', 'qty']);
+					}
 					const product = {
 						name: `${farmer.farmName} ${category.name} ${faker.string.alphanumeric(5)}`,
 						description: faker.commerce.productDescription(),
@@ -108,6 +114,7 @@ export const initializeTestProducts = async () => {
 						category: category.id,
 						farmer: farmer.id,
 						processorToken: `tok_test_${faker.string.alphanumeric(10)}`,
+						measurement,
 					};
 					products.push(product);
 				}

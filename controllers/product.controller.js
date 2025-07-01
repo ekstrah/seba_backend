@@ -14,6 +14,7 @@ export const oCreate = async (req, res) => {
 		certType,
 		farmingMethod,
 		category,
+		measurement,
 	} = req.body;
 	try {
 		const oProduct = new Product({
@@ -28,6 +29,7 @@ export const oCreate = async (req, res) => {
 			certType,
 			farmingMethod,
 			category,
+			measurement,
 		});
 
 		await oProduct.save();
@@ -168,6 +170,7 @@ export const createFarmerProduct = async (req, res) => {
 			certType,
 			farmingMethod,
 			category,
+			measurement,
 		} = req.body;
 
 		// Verify the user is a farmer
@@ -193,6 +196,7 @@ export const createFarmerProduct = async (req, res) => {
 			category,
 			farmer: userId,
 			isAvailable: true,
+			measurement,
 		});
 
 		await product.save();

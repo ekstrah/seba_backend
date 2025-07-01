@@ -7,6 +7,7 @@ import {
 import { verifyToken } from "../middleware/verifyToken.js";
 import { getAddresses } from "../controllers/address.controller.js";
 import { createSetupIntent } from "../controllers/stripeWebhook.controller.js";
+import { Farmer } from "../models/farmer.model.js";
 
 const router = express.Router();
 
@@ -27,5 +28,18 @@ router.post("/payment-methods/create-setup-intent", createSetupIntent);
 
 // List saved Stripe payment methods
 router.get("/payment-methods", listPaymentMethods);
+
+// Public route to get farmer details by ID
+router.get("/farmer/:id", async (req, res) => {
+	try {
+		const farmer = await Farmer.findById(req.params.id).select("-password");
+		if (!farmer) {
+			return res.status(404).json({ success: false, message: "Farmer not found" });
+		}
+		res.status(200).json({ success: true, farmer });
+	} catch (error) {
+		res.status(500).json({ success: false, message: error.message });
+	}
+});
 
 export default router;
