@@ -4,11 +4,12 @@ import {
 	oDelete,
 	oReadAll,
 } from "../controllers/category.controller.js";
+import { authorize } from '../middleware/authorize.js';
 
 const router = express.Router();
 
-router.post("/create", oCreate);
-router.get("/readAll", oReadAll);
-router.delete("/delete", oDelete);
+router.post("/create", authorize('createCategory'), oCreate);
+router.get("/readAll", authorize('readAllCategories'), oReadAll);
+router.delete("/delete", authorize('deleteCategory'), oDelete);
 
 export default router;

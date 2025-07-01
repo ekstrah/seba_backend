@@ -6,6 +6,7 @@ import {
 	updateAddress,
 } from "../controllers/address.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
+import { authorize } from '../middleware/authorize.js';
 
 const router = express.Router();
 
@@ -13,15 +14,15 @@ const router = express.Router();
 router.use(verifyToken);
 
 // Get all addresses
-router.get("/", getAddresses);
+router.get("/", authorize('getAddresses'), getAddresses);
 
 // Add new address
-router.post("/", addAddress);
+router.post("/", authorize('addAddress'), addAddress);
 
 // Update address
-router.put("/:addressId", updateAddress);
+router.put("/:addressId", authorize('updateAddress'), updateAddress);
 
 // Delete address
-router.delete("/:addressId", deleteAddress);
+router.delete("/:addressId", authorize('deleteAddress'), deleteAddress);
 
 export default router;

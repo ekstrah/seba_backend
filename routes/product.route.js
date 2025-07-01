@@ -11,16 +11,17 @@ import {
 } from "../controllers/product.controller.js";
 import { verifyProductOwnership } from "../middleware/product.middleware.js";
 import { verifyToken } from "../middleware/verifyToken.js";
+import { authorize } from '../middleware/authorize.js';
 import { Category } from "../models/category.model.js";
 
 const router = express.Router();
 
 // Public routes
-router.get("/", oGetAll);
-router.get("/search", oFind);
-router.get("/:productId/related", getRelatedProducts);
-router.get("/:id", getProductById);
-router.get("/categories", async (req, res) => {
+router.get("/", authorize('getAllProducts'), oGetAll);
+router.get("/search", authorize('getAllProducts'), oFind);
+router.get("/:productId/related", authorize('getRelatedProducts'), getRelatedProducts);
+router.get("/:id", authorize('getProductById'), getProductById);
+router.get("/categories", authorize('readAllCategories'), async (req, res) => {
 	try {
 		const categories = await Category.find();
 		res.status(200).json(categories);
@@ -33,11 +34,11 @@ router.get("/categories", async (req, res) => {
 router.use(verifyToken);
 
 // Farmer routes
-router.post("/farmer", createFarmerProduct);
-router.get("/farmer/:farmerId", getFarmerProducts);
-router.get("/my-products", getMyProducts);
+router.post("/farmer", authorize('createProduct'), createFarmerProduct);
+router.get("/farmer/:farmerId", authorize('getFarmerProducts'), getFarmerProducts);
+router.get("/my-products", authorize('getMyProducts'), getMyProducts);
 
 // Product ID specific routes (require product ownership verification)
-router.delete("/:productId", verifyProductOwnership, deleteProduct);
+router.delete("/:productId", verifyProductOwnership, authorize('deleteProduct'), deleteProduct);
 
 export default router;

@@ -9,18 +9,19 @@ import {
 	verifyEmail,
 } from "../controllers/auth.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
+import { authorize } from '../middleware/authorize.js';
 
 const router = express.Router();
 
-router.get("/check-auth", verifyToken, checkAuth);
-router.post("/signup", signup);
-router.post("/login", login);
-router.post("/logout", logout);
+router.get("/check-auth", verifyToken, authorize('checkAuth'), checkAuth);
+router.post("/signup", authorize('signup'), signup);
+router.post("/login", authorize('login'), login);
+router.post("/logout", verifyToken, authorize('logout'), logout);
 
-router.post("/verify-email", verifyEmail);
-router.post("/forgot-password", forgotPassword);
+router.post("/verify-email", authorize('verifyEmail'), verifyEmail);
+router.post("/forgot-password", authorize('forgotPassword'), forgotPassword);
 
-router.post("/reset-password/:token", resetPassword);
+router.post("/reset-password/:token", authorize('resetPassword'), resetPassword);
 
 export default router;
 

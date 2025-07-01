@@ -8,11 +8,12 @@ import { verifyToken } from "../middleware/verifyToken.js";
 import { getAddresses } from "../controllers/address.controller.js";
 import { createSetupIntent } from "../controllers/stripeWebhook.controller.js";
 import { Farmer } from "../models/farmer.model.js";
+import { authorize } from '../middleware/authorize.js';
 
 const router = express.Router();
 
 // Public route to get farmer details by ID
-router.get("/farmer/:id", async (req, res) => {
+router.get("/farmer/:id", authorize('getFarmerDetails'), async (req, res) => {
 	try {
 		const farmer = await Farmer.findById(req.params.id).select("-password");
 		if (!farmer) {
@@ -28,18 +29,18 @@ router.get("/farmer/:id", async (req, res) => {
 router.use(verifyToken);
 
 // Get user contact information
-router.get("/contact", getContactInfo);
+router.get("/contact", authorize('getContactInfo'), getContactInfo);
 
 // Update user contact information
-router.put("/contact", updateContactInfo);
+router.put("/contact", authorize('updateContactInfo'), updateContactInfo);
 
 // Get user addresses
-router.get("/addresses", getAddresses);
+router.get("/addresses", authorize('getAddresses'), getAddresses);
 
 // Stripe SetupIntent for saving a card
-router.post("/payment-methods/create-setup-intent", createSetupIntent);
+router.post("/payment-methods/create-setup-intent", authorize('createSetupIntent'), createSetupIntent);
 
 // List saved Stripe payment methods
-router.get("/payment-methods", listPaymentMethods);
+router.get("/payment-methods", authorize('listPaymentMethods'), listPaymentMethods);
 
 export default router;
