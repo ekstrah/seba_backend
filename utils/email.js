@@ -75,22 +75,3 @@ export async function renderTemplate(templateName, data) {
     throw error;
   }
 }
-
-/**
- * Alternative function to send email directly with MJML template
- * @param {Object} options
- * @param {string} options.from - Sender email address
- * @param {string} options.to - Recipient email address
- * @param {string} options.subject - Email subject
- * @param {string} options.templateName - MJML template name
- * @param {Object} options.data - Data for template rendering
- */
-export async function sendEmailWithTemplate({ from, to, subject, templateName, data }) {
-  try {
-    const html = await renderTemplate(templateName, data);
-    return await sendEmail({ from, to, subject, html });
-  } catch (error) {
-    console.error("Error sending email with template:", error);
-    throw error;
-  }
-}

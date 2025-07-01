@@ -3,7 +3,6 @@ import { CartItem } from "../models/cartItem.model.js";
 import { Order } from "../models/order.model.js";
 import { OrderItem } from "../models/orderItem.model.js";
 import { Product } from "../models/product.model.js";
-import { sendEmail } from '../utils/email.js';
 import { sendOrderConfirmationEmail } from './email.controller.js';
 import stripe from '../utils/stripe.js';
 import { Consumer } from '../models/consumer.model.js';

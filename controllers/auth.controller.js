@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import bcryptjs from "bcryptjs";
 import { sendVerificationEmail, sendWelcomeEmail, sendResetPasswordEmail } from "./email.controller.js";
 import { Consumer } from "../models/consumer.model.js";
