@@ -10,7 +10,10 @@ export const getOrCreateCart = async (req, res) => {
 			status: "active",
 		}).populate({
 			path: "items",
-			populate: [{ path: "product" }, { path: "farmer" }],
+			populate: [
+				{ path: "products.product" },
+				{ path: "farmer" }
+			],
 		});
 
 		if (!cart) {
@@ -33,7 +36,7 @@ export const getOrCreateCart = async (req, res) => {
 				};
 			}
 			totals[farmerId].totalAmount += item.subtotal;
-			totals[farmerId].itemCount += item.quantity;
+			totals[farmerId].itemCount += item.products.reduce((sum, p) => sum + p.quantity, 0);
 			return totals;
 		}, {});
 
@@ -89,7 +92,6 @@ export const addToCart = async (req, res) => {
 			});
 		}
 
-		// Convert product price from string to number
 		const unitPrice = Number.parseFloat(product.price);
 		if (Number.isNaN(unitPrice)) {
 			return res.status(400).json({
@@ -98,29 +100,42 @@ export const addToCart = async (req, res) => {
 			});
 		}
 
-		// Check if item already exists in cart
-		const existingCartItem = await CartItem.findOne({
+		// Find CartItem for this farmer in the cart
+		let cartItem = await CartItem.findOne({
 			_id: { $in: cart.items },
-			product: productId,
 			farmer: product.farmer._id,
 		});
 
-		let cartItem;
-		if (existingCartItem) {
-			// Update existing cart item
-			existingCartItem.quantity += quantity;
-			existingCartItem.unitPrice = unitPrice; // Update price in case it changed
-			existingCartItem.subtotal = existingCartItem.quantity * unitPrice; // Calculate subtotal
-			await existingCartItem.save();
-			cartItem = existingCartItem;
+		let productInCart = null;
+		if (cartItem) {
+			// Check if product already exists in products array
+			productInCart = cartItem.products.find(p => p.product.toString() === productId);
+			if (productInCart) {
+				// Update quantity and subtotal
+				productInCart.quantity += quantity;
+				productInCart.unitPrice = unitPrice;
+				productInCart.subtotal = productInCart.quantity * unitPrice;
+			} else {
+				// Add new product to products array
+				cartItem.products.push({
+					product: productId,
+					quantity,
+					unitPrice,
+					subtotal: quantity * unitPrice,
+				});
+			}
+			await cartItem.save();
 		} else {
-			// Create new cart item
+			// Create new CartItem for this farmer
 			cartItem = new CartItem({
-				product: productId,
 				farmer: product.farmer._id,
-				quantity,
-				unitPrice,
-				subtotal: quantity * unitPrice, // Calculate initial subtotal
+				products: [{
+					product: productId,
+					quantity,
+					unitPrice,
+					subtotal: quantity * unitPrice,
+				}],
+				subtotal: quantity * unitPrice,
 			});
 			await cartItem.save();
 			cart.items.push(cartItem._id);
@@ -135,7 +150,10 @@ export const addToCart = async (req, res) => {
 		// Populate cart details
 		await cart.populate({
 			path: "items",
-			populate: [{ path: "product" }, { path: "farmer" }],
+			populate: [
+				{ path: "products.product" },
+				{ path: "farmer" }
+			],
 		});
 
 		// Calculate totals by farmer
@@ -149,13 +167,13 @@ export const addToCart = async (req, res) => {
 				};
 			}
 			totals[farmerId].totalAmount += item.subtotal;
-			totals[farmerId].itemCount += item.quantity;
+			totals[farmerId].itemCount += item.products.reduce((sum, p) => sum + p.quantity, 0);
 			return totals;
 		}, {});
 
 		res.status(200).json({
 			success: true,
-			message: existingCartItem
+			message: productInCart
 				? "Cart item quantity updated"
 				: "Item added to cart successfully",
 			cart: {
@@ -172,10 +190,10 @@ export const addToCart = async (req, res) => {
 	}
 };
 
-// Update cart item quantity
+// Update cart item quantity (for a specific product in a CartItem)
 export const updateCartItem = async (req, res) => {
 	try {
-		const { cartItemId } = req.params;
+		const { cartItemId, productId } = req.params;
 		const { quantity } = req.body;
 
 		if (!quantity) {
@@ -193,12 +211,22 @@ export const updateCartItem = async (req, res) => {
 			});
 		}
 
-		// Calculate the difference in subtotal
-		const oldSubtotal = cartItem.subtotal;
-		cartItem.quantity = quantity;
+		// Find the product in the products array
+		const productInCart = cartItem.products.find(p => p.product.toString() === productId);
+		if (!productInCart) {
+			return res.status(404).json({
+				success: false,
+				message: "Product not found in cart item",
+			});
+		}
+
+		// Update quantity and subtotal
+		productInCart.quantity = quantity;
+		productInCart.subtotal = productInCart.quantity * productInCart.unitPrice;
 		await cartItem.save();
-		const newSubtotal = cartItem.subtotal;
-		const subtotalDifference = newSubtotal - oldSubtotal;
+
+		// Update cartItem subtotal (handled by pre-save hook)
+		await cartItem.save();
 
 		// Update cart total
 		const cart = await Cart.findOne({
@@ -206,9 +234,10 @@ export const updateCartItem = async (req, res) => {
 			status: "active",
 			items: cartItemId,
 		});
-
 		if (cart) {
-			cart.totalAmount += subtotalDifference;
+			cart.totalAmount = (
+				await CartItem.find({ _id: { $in: cart.items } })
+			).reduce((sum, item) => sum + item.subtotal, 0);
 			await cart.save();
 		}
 
@@ -226,10 +255,10 @@ export const updateCartItem = async (req, res) => {
 	}
 };
 
-// Remove item from cart
+// Remove product from cart (from a CartItem's products array)
 export const removeFromCart = async (req, res) => {
 	try {
-		const { cartItemId } = req.params;
+		const { cartItemId, productId } = req.params;
 		const quantity = req.body?.quantity;
 
 		const cartItem = await CartItem.findById(cartItemId);
@@ -240,70 +269,68 @@ export const removeFromCart = async (req, res) => {
 			});
 		}
 
-		const cart = await Cart.findOne({
-			consumer: req.userId,
-			status: "active",
-			items: cartItemId,
-		});
-
-		if (!cart) {
+		// Find the product in the products array
+		const productIndex = cartItem.products.findIndex(p => p.product.toString() === productId);
+		if (productIndex === -1) {
 			return res.status(404).json({
 				success: false,
-				message: "Cart not found",
+				message: "Product not found in cart item",
 			});
 		}
+
+		const productInCart = cartItem.products[productIndex];
 
 		// Only decrement if quantity is provided and less than current quantity
-		if (quantity && quantity < cartItem.quantity) {
-			const oldSubtotal = cartItem.subtotal;
-			cartItem.quantity -= quantity;
-			cartItem.subtotal = cartItem.quantity * cartItem.unitPrice;
+		if (quantity && quantity < productInCart.quantity) {
+			productInCart.quantity -= quantity;
+			productInCart.subtotal = productInCart.quantity * productInCart.unitPrice;
 			await cartItem.save();
+		} else {
+			// Remove the product from the products array
+			cartItem.products.splice(productIndex, 1);
+			await cartItem.save();
+		}
 
-			cart.totalAmount -= oldSubtotal - cartItem.subtotal;
-			await cart.save();
+		// If products array is empty, remove the CartItem from the cart and delete it
+		let cart;
+		if (cartItem.products.length === 0) {
+			cart = await Cart.findOne({
+				consumer: req.userId,
+				status: "active",
+				items: cartItemId,
+			});
+			if (cart) {
+				cart.items = cart.items.filter((item) => item.toString() !== cartItemId);
+				await cart.save();
+			}
+			await CartItem.findByIdAndDelete(cartItemId);
+		} else {
+			// Otherwise, update the cart total
+			cart = await Cart.findOne({
+				consumer: req.userId,
+				status: "active",
+				items: cartItemId,
+			});
+			if (cart) {
+				cart.totalAmount = (
+					await CartItem.find({ _id: { $in: cart.items } })
+				).reduce((sum, item) => sum + item.subtotal, 0);
+				await cart.save();
+			}
+		}
 
+		// Populate cart details
+		if (cart) {
 			await cart.populate({
 				path: "items",
-				populate: [{ path: "product" }, { path: "farmer" }],
-			});
-
-			const farmerTotals = cart.items.reduce((totals, item) => {
-				const farmerId = item.farmer._id.toString();
-				if (!totals[farmerId]) {
-					totals[farmerId] = {
-						farmer: item.farmer,
-						totalAmount: 0,
-						itemCount: 0,
-					};
-				}
-				totals[farmerId].totalAmount += item.subtotal;
-				totals[farmerId].itemCount += item.quantity;
-				return totals;
-			}, {});
-
-			return res.status(200).json({
-				success: true,
-				message: "Quantity reduced successfully",
-				cart: {
-					...cart.toObject(),
-					farmerTotals: Object.values(farmerTotals),
-				},
+				populate: [
+					{ path: "products.product" },
+					{ path: "farmer" }
+				],
 			});
 		}
 
-		// Otherwise, remove the entire item
-		cart.items = cart.items.filter((item) => item.toString() !== cartItemId);
-		cart.totalAmount -= cartItem.subtotal;
-		await cart.save();
-		await CartItem.findByIdAndDelete(cartItemId);
-
-		await cart.populate({
-			path: "items",
-			populate: [{ path: "product" }, { path: "farmer" }],
-		});
-
-		const farmerTotals = cart.items.reduce((totals, item) => {
+		const farmerTotals = cart && cart.items ? cart.items.reduce((totals, item) => {
 			const farmerId = item.farmer._id.toString();
 			if (!totals[farmerId]) {
 				totals[farmerId] = {
@@ -313,17 +340,17 @@ export const removeFromCart = async (req, res) => {
 				};
 			}
 			totals[farmerId].totalAmount += item.subtotal;
-			totals[farmerId].itemCount += item.quantity;
+			totals[farmerId].itemCount += item.products.reduce((sum, p) => sum + p.quantity, 0);
 			return totals;
-		}, {});
+		}, {}) : {};
 
 		res.status(200).json({
 			success: true,
-			message: "Item removed from cart successfully",
-			cart: {
+			message: "Product removed from cart successfully",
+			cart: cart ? {
 				...cart.toObject(),
 				farmerTotals: Object.values(farmerTotals),
-			},
+			} : null,
 		});
 	} catch (error) {
 		console.error("Error in removeFromCart:", error);

@@ -1,6 +1,7 @@
+import dotenv from "dotenv";
+dotenv.config();
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
 
@@ -20,7 +21,6 @@ import { initializeTestProducts } from "./utils/testProducts.js";
 import { initializeTestReviews } from "./utils/testReviews.js";
 import { stripeWebhook } from "./controllers/stripeWebhook.controller.js";
 
-dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 

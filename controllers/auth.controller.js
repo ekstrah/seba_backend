@@ -1,11 +1,6 @@
 import crypto from "node:crypto";
 import bcryptjs from "bcryptjs";
-import {
-	sendPasswordResetEmail,
-	sendResetSucessEmail,
-	sendVerificationEmail,
-	sendWelcomeEmail,
-} from "../mailtrap/emails.js";
+import { sendVerificationEmail, sendWelcomeEmail, sendResetPasswordEmail } from "./email.controller.js";
 import { Consumer } from "../models/consumer.model.js";
 import { Farmer } from "../models/farmer.model.js";
 import { User } from "../models/user.model.js";
@@ -82,7 +77,7 @@ export const signup = async (req, res) => {
 
 		// jwt
 		generateTokenAndSetCookie(res, user._id);
-		await sendVerificationEmail(user.email, verificationToken);
+		await sendVerificationEmail(user.email, verificationToken, user.name);
 
 		res.status(201).json({
 			success: true,
@@ -179,21 +174,20 @@ export const forgotPassword = async (req, res) => {
 		if (!user) {
 			return res.status(400).json({ sucess: false, message: "User not found" });
 		}
-		const resetToken = crypto.randomBytes(20).toString("hex");
-		const resetTokenExpiresAt = Date.now() + 3 * 60 * 1000;
-
-		user.resetPasswordToken = resetToken;
-		user.resetPasswordExpiresAt = resetTokenExpiresAt;
-
+		// Generate a temporary password
+		const tempPassword = Math.random().toString(36).slice(-10);
+		const hashedTempPassword = await bcryptjs.hash(tempPassword, 10);
+		user.password = hashedTempPassword;
 		await user.save();
 
-		await sendPasswordResetEmail(
-			user.email,
-			`${process.env.CLIENT_URL}/reset-password/${resetToken}`,
-		);
+		// Prepare email details
+		const resetLink = `${process.env.CLIENT_URL}/reset-password`;
+		const expirationTime = '24 hours';
+		await sendResetPasswordEmail(user.email, user.name, tempPassword, resetLink, expirationTime);
+
 		res.status(200).json({
 			sucess: true,
-			message: "Password reset link sent to your email",
+			message: "Temporary password sent to your email. Please check your inbox.",
 		});
 	} catch (error) {
 		console.log("Error in forgotPassword ", error);
@@ -224,7 +218,7 @@ export const resetPassword = async (req, res) => {
 		user.resetPasswordExpiresAt = undefined;
 		await user.save();
 
-		await sendResetSucessEmail(user.email);
+		await sendVerificationEmail(user.email, user.name);
 		res.status(200).json({ sucess: true, message: "Password reset sucessful" });
 	} catch (error) {
 		console.log("Error in resetPassword ", error);

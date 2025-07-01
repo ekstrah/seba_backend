@@ -83,8 +83,6 @@ export const initializeTestAccounts = async () => {
 				const randomCity = faker.location.city();
 				const randomStreetAddress = faker.location.streetAddress(); 
 				const randomZipCode = faker.location.zipCode();
-				const creditCardNumber = faker.finance.creditCardNumber();
-				const expiryDate = faker.date.future({ years: 5 });
 				
 				consumer = await Consumer.create({
 					...consumerData,

@@ -36,6 +36,7 @@ export const createSetupIntent = async (req, res) => {
     if (!consumer) {
       return res.status(404).json({ success: false, message: "Consumer not found" });
     }
+    let createdCustomerId = null;
     // If the user does not have a Stripe customer, create one
     if (!consumer.stripeCustomerId) {
       const stripeCustomer = await stripe.customers.create({
@@ -43,9 +44,18 @@ export const createSetupIntent = async (req, res) => {
         name: consumer.name,
         phone: consumer.phone,
       });
-      consumer.stripeCustomerId = stripeCustomer.id;
+      createdCustomerId = stripeCustomer.id;
+      consumer.stripeCustomerId = createdCustomerId;
       await consumer.save();
+      // Re-fetch to check for race condition
+      consumer = await Consumer.findById(req.userId);
+      if (consumer.stripeCustomerId && consumer.stripeCustomerId !== createdCustomerId) {
+        // Another request already set a different customer, so delete the extra one
+        console.warn('Race condition: deleting extra Stripe customer', createdCustomerId);
+        await stripe.customers.del(createdCustomerId);
+      }
     }
+    console.log('Creating SetupIntent for consumer:', consumer._id, 'stripeCustomerId:', consumer.stripeCustomerId);
     const setupIntent = await stripe.setupIntents.create({
       customer: consumer.stripeCustomerId,
     });

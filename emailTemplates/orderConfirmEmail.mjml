@@ -69,7 +69,7 @@
         </mj-text>
         <mj-raw>
           <div style="text-align: center; margin: 20px 0;">
-            <span class="status-badge">Order #LH-2024-001234</span>
+            <span class="status-badge">Order #{{order._id}}</span>
           </div>
         </mj-raw>
       </mj-column>
@@ -81,65 +81,40 @@
         <mj-text font-size="20px" font-weight="bold" color="#166534" padding="0 0 15px 0">
           Order Details
         </mj-text>
-        
         <mj-raw>
           <div class="order-summary">
-            <!-- Order Item 1 -->
-            <div class="order-item">
-              <table width="100%" style="border-collapse: collapse;">
-                <tr>
-                  <td width="80px" style="vertical-align: top;">
-                    <img src="https://placehold.co/60x60/ef4444/ffffff?text=🍅" alt="Heirloom Tomatoes" style="border-radius: 6px; width: 60px; height: 60px;" />
-                  </td>
-                  <td style="padding-left: 15px; vertical-align: top;">
-                    <div style="font-weight: bold; color: #18181b; margin-bottom: 5px;">Heirloom Tomatoes</div>
-                    <div style="color: #6b7280; font-size: 14px; margin-bottom: 5px;">From Sunny Acres Farm</div>
-                    <div style="color: #6b7280; font-size: 14px;">Qty: 2 lbs</div>
-                  </td>
-                  <td style="text-align: right; vertical-align: top; font-weight: bold;">
-                    $12.99
-                  </td>
-                </tr>
+            {{#order.orderItems}}
+            <div class="order-item" style="margin: auto;">
+              <table width="100%" style="border-collapse: collapse; margin-bottom: 8px; border-collapse: separate; border-spacing: 0 8px;">
+              <caption style="color: green; font-size: 18px; margin: auto;">{{farmName}}</caption>
+                <thead>
+                  <tr style="background: #f0fdf4; color: #166534;">
+                    <th align="center" style="color: black; font-size: 15px;">Product</th>
+                    <th align="center" style="color: black; font-size: 15px;">Unit Price</th>
+                    <th align="center" style="color: black; font-size: 15px;">Quantity</th>
+                    <th align="center" style="color: black; font-size: 15px;">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#products}}
+                  <tr>
+                    <td align="center" style="color: black; font-size: 15px;">{{name}}</td>
+                    <td align="center" style="color: black; font-size: 15px;">{{unitPrice}} per {{measurement}}</td>
+                    <td align="center" style="color: black; font-size: 15px;">{{quantity}}</td>
+                    <td align="center" style="color: black; font-size: 15px;">{{subtotal}}</td>
+                  </tr>
+                  
+                  {{/products}}
+                  <tr>
+                    <td colspan="4"></td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" align="center"  style="color: black; font-weight: bold; font-size: 15px;">Subtotal: {{subtotal}}
+                  </tr>
+                </tbody>
               </table>
             </div>
-            
-            <!-- Order Item 2 -->
-            <div class="order-item">
-              <table width="100%" style="border-collapse: collapse;">
-                <tr>
-                  <td width="80px" style="vertical-align: top;">
-                    <img src="https://placehold.co/60x60/f97316/ffffff?text=🥕" alt="Organic Carrots" style="border-radius: 6px; width: 60px; height: 60px;" />
-                  </td>
-                  <td style="padding-left: 15px; vertical-align: top;">
-                    <div style="font-weight: bold; color: #18181b; margin-bottom: 5px;">Organic Carrots</div>
-                    <div style="color: #6b7280; font-size: 14px; margin-bottom: 5px;">From Green Valley Farm</div>
-                    <div style="color: #6b7280; font-size: 14px;">Qty: 1.5 lbs</div>
-                  </td>
-                  <td style="text-align: right; vertical-align: top; font-weight: bold;">
-                    $8.49
-                  </td>
-                </tr>
-              </table>
-            </div>
-            
-            <!-- Order Item 3 -->
-            <div class="order-item">
-              <table width="100%" style="border-collapse: collapse;">
-                <tr>
-                  <td width="80px" style="vertical-align: top;">
-                    <img src="https://placehold.co/60x60/22c55e/ffffff?text=🥬" alt="Crisp Lettuce" style="border-radius: 6px; width: 60px; height: 60px;" />
-                  </td>
-                  <td style="padding-left: 15px; vertical-align: top;">
-                    <div style="font-weight: bold; color: #18181b; margin-bottom: 5px;">Crisp Lettuce Mix</div>
-                    <div style="color: #6b7280; font-size: 14px; margin-bottom: 5px;">From Mountain View Farm</div>
-                    <div style="color: #6b7280; font-size: 14px;">Qty: 1 head</div>
-                  </td>
-                  <td style="text-align: right; vertical-align: top; font-weight: bold;">
-                    $4.99
-                  </td>
-                </tr>
-              </table>
-            </div>
+            {{/order.orderItems}}
           </div>
         </mj-raw>
       </mj-column>
@@ -152,20 +127,12 @@
           <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin: 15px 25px;">
             <table width="100%" style="border-collapse: collapse;">
               <tr>
-                <td style="padding: 8px 0; color: #6b7280;">Subtotal:</td>
-                <td style="text-align: right; padding: 8px 0; font-weight: 500;">$26.47</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #6b7280;">Delivery Fee:</td>
-                <td style="text-align: right; padding: 8px 0; font-weight: 500;">$4.99</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #6b7280;">Tax:</td>
-                <td style="text-align: right; padding: 8px 0; font-weight: 500;">$2.52</td>
+                <td style="padding: 8px 0; color: #6b7280;">Shipping:</td>
+                <td style="text-align: right; padding: 8px 0; font-weight: 500; color: #22c55e;">Free</td>
               </tr>
               <tr style="border-top: 2px solid #e5e7eb;">
                 <td style="padding: 15px 0 8px 0; font-size: 18px; font-weight: bold; color: #166534;">Total:</td>
-                <td style="text-align: right; padding: 15px 0 8px 0; font-size: 18px; font-weight: bold; color: #166534;">$33.98</td>
+                <td style="text-align: right; padding: 15px 0 8px 0; font-size: 18px; font-weight: bold; color: #166534;">€{{order.totalAmount}}</td>
               </tr>
             </table>
           </div>
@@ -186,10 +153,10 @@
         </mj-text>
         <mj-text font-size="14px" color="#6b7280" padding="10px 0 0 0">
           <strong>Delivery Address:</strong><br/>
-          John Smith<br/>
-          123 Green Street<br/>
-          Munich, Bavaria 80331<br/>
-          Germany
+          {{order.shippingAddress.name}}<br/>
+          {{order.shippingAddress.street}}<br/>
+          {{order.shippingAddress.city}}, {{order.shippingAddress.state}} {{order.shippingAddress.zipCode}}<br/>
+          {{order.shippingAddress.country}}
         </mj-text>
       </mj-column>
       <mj-column width="50%">
@@ -198,27 +165,13 @@
         </mj-text>
         <mj-text font-size="14px" color="#6b7280">
           <strong>Credit Card:</strong><br/>
-          **** **** **** 1234<br/>
-          Expires: 12/27
+          {{order.paymentDetails.paymentMethodSnapshot.displayInfo.cardType | capitalize}} ending in {{order.paymentDetails.paymentMethodSnapshot.displayInfo.lastFourDigits}}<br/>
+          Expires: {{order.paymentDetails.paymentMethodSnapshot.displayInfo.expiryMonth}}/{{order.paymentDetails.paymentMethodSnapshot.displayInfo.expiryYear}}
         </mj-text>
         <mj-text font-size="14px" color="#6b7280" padding="10px 0 0 0">
           <strong>Billing Address:</strong><br/>
           Same as delivery address
         </mj-text>
-      </mj-column>
-    </mj-section>
-
-    <!-- Action Buttons -->
-    <mj-section css-class="body-section" padding="30px 0">
-      <mj-column width="50%">
-        <mj-button href="https://example.com/track-order/LH-2024-001234" background-color="#22c55e" width="100%">
-          Track Your Order
-        </mj-button>
-      </mj-column>
-      <mj-column width="50%">
-        <mj-button href="https://example.com/account/orders" background-color="#ffffff" color="#22c55e" border="2px solid #22c55e" width="100%">
-          View All Orders
-        </mj-button>
       </mj-column>
     </mj-section>
 
@@ -264,11 +217,6 @@
         </mj-social>
         <mj-text align="center" font-size="12px" line-height="1.5" color="#555555">
           <p>Thank you for supporting local farmers! <br /> © 2024 LocalHarvest Inc. All rights reserved.</p>
-          <p>
-            <a href="#" style="color: #555555; text-decoration: underline;">Return Policy</a> | 
-            <a href="#" style="color: #555555; text-decoration: underline;">Contact Support</a> | 
-            <a href="#" style="color: #555555; text-decoration: underline;">Manage Preferences</a>
-          </p>
         </mj-text>
       </mj-column>
     </mj-section>

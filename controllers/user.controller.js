@@ -94,6 +94,7 @@ export const listPaymentMethods = async (req, res) => {
 				message: "No Stripe customer found for this user."
 			});
 		}
+		console.log('Listing payment methods for consumer:', consumer._id, 'stripeCustomerId:', consumer.stripeCustomerId);
 		// List payment methods from Stripe
 		const paymentMethods = await stripe.paymentMethods.list({
 			customer: consumer.stripeCustomerId,

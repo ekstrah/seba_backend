@@ -9,19 +9,16 @@ import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
-// Apply authentication middleware to all routes
-router.use(verifyToken);
+// Create a new review (protected)
+router.post("/", verifyToken, createReview);
 
-// Create a new review
-router.post("/", createReview);
+// Update a review (protected)
+router.put("/:id", verifyToken, updateReview);
 
-// Update a review
-router.put("/:id", updateReview);
+// Delete a review (protected)
+router.delete("/:id", verifyToken, deleteReview);
 
-// Delete a review
-router.delete("/:id", deleteReview);
-
-// Get reviews for a farmer or product
+// Get reviews for a farmer or product (public)
 router.get("/:type/:id", getReviews);
 
 export default router;

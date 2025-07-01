@@ -1,7 +1,6 @@
 import express from "express";
 import {
 	cancelOrder,
-	createOrder,
 	getAllOrders,
 	getOrderById,
 	getOrdersByConsumer,
@@ -16,9 +15,6 @@ const router = express.Router();
 
 // All routes require authentication
 router.use(verifyToken);
-
-// Create new order
-router.post("/", createOrder);
 
 // Get all orders (admin only)
 router.get("/", getAllOrders);

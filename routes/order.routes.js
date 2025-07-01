@@ -1,7 +1,6 @@
 import express from "express";
 import {
 	cancelOrder,
-	createOrder,
 	createOrderFromCart,
 	getAllOrders,
 	getOrderById,
@@ -13,13 +12,10 @@ import {
 	createGuestOrder,
 	guestPaymentIntent,
 } from "../controllers/order.controller.js";
-import { sendTestEmail } from "../controllers/email.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
-// Test email endpoint (no auth)
-router.post("/test-email", sendTestEmail);
 
 // Guest payment intent for guest checkout (should be before verifyToken)
 router.post("/guest/payment-intent", guestPaymentIntent);
@@ -41,9 +37,6 @@ router.get("/farmer-orders", getOrdersByFarmer);
 
 // Get order by ID
 router.get("/:id", getOrderById);
-
-// Create new order
-router.post("/", createOrder);
 
 // Create order from cart
 router.post("/from-cart", createOrderFromCart);

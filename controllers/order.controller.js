@@ -4,104 +4,10 @@ import { Order } from "../models/order.model.js";
 import { OrderItem } from "../models/orderItem.model.js";
 import { Product } from "../models/product.model.js";
 import { sendEmail } from '../utils/email.js';
-import { sendTestEmail } from './email.controller.js';
+import { sendOrderConfirmationEmail } from './email.controller.js';
 import stripe from '../utils/stripe.js';
 import { Consumer } from '../models/consumer.model.js';
 
-// Create a new order
-export const createOrder = async (req, res) => {
-	try {
-		const { orderItems, shippingAddress, notes, stripePaymentMethodId } = req.body;
-
-		// Validate required fields
-		if (!orderItems || !shippingAddress || !stripePaymentMethodId) {
-			return res.status(400).json({
-				success: false,
-				message: "Order items, shipping address, and Stripe payment method ID are required",
-			});
-		}
-
-		// Calculate total amount from order items
-		const orderItemsData = await OrderItem.find({ _id: { $in: orderItems } });
-		const totalAmount = orderItemsData.reduce(
-			(sum, item) => sum + item.subtotal,
-			0,
-		);
-		console.log('DEBUG: totalAmount (EUR):', totalAmount, 'amount (cents):', Math.round(totalAmount * 100));
-
-		// Find the consumer and get their Stripe customer ID
-		const consumer = await Consumer.findById(req.userId);
-		if (!consumer || !consumer.stripeCustomerId) {
-			return res.status(404).json({ success: false, message: "Consumer or Stripe customer not found" });
-		}
-
-		// Create a PaymentIntent with Stripe
-		const paymentIntent = await stripe.paymentIntents.create({
-			amount: Math.round(totalAmount * 100), // amount in cents
-			currency: 'eur',
-			customer: consumer.stripeCustomerId,
-			payment_method: stripePaymentMethodId,
-			off_session: false,
-			confirm: true,
-			automatic_payment_methods: {
-				enabled: true,
-				allow_redirects: 'never'
-			},
-			metadata: {
-				consumerId: consumer._id.toString(),
-			},
-		});
-
-		// Fetch payment method details from Stripe for snapshot
-		const paymentMethod = await stripe.paymentMethods.retrieve(stripePaymentMethodId);
-
-		// Create new order, store PaymentIntent ID
-		const order = new Order({
-			consumer: req.userId,
-			orderItems,
-			totalAmount,
-			shippingAddress,
-			notes,
-			paymentDetails: {
-				transactionId: paymentIntent.id,
-				status: paymentIntent.status,
-				paymentMethodSnapshot: paymentMethod && paymentMethod.card ? {
-					type: paymentMethod.type,
-					processor: 'stripe',
-					processorToken: paymentMethod.id,
-					displayInfo: {
-						lastFourDigits: paymentMethod.card.last4,
-						cardType: paymentMethod.card.brand,
-						expiryMonth: paymentMethod.card.exp_month,
-						expiryYear: paymentMethod.card.exp_year,
-					},
-				} : undefined,
-			},
-			status: 'pending',
-			paymentStatus: 'pending',
-		});
-
-		await order.save();
-
-		// Populate order details
-		await order.populate([
-			{ path: "orderItems", populate: { path: "product" } },
-		]);
-
-		res.status(201).json({
-			success: true,
-			message: "Order created and payment initiated",
-			order,
-			paymentIntentStatus: paymentIntent.status,
-		});
-	} catch (error) {
-		console.error("Error in createOrder:", error);
-		res.status(500).json({
-			success: false,
-			message: error.message,
-		});
-	}
-};
 
 // Get all orders (with pagination)
 export const getAllOrders = async (req, res) => {
@@ -112,7 +18,7 @@ export const getAllOrders = async (req, res) => {
 
 		const orders = await Order.find()
 			.populate([
-				{ path: "orderItems", populate: { path: "product" } },
+				{ path: "orderItems", populate: { path: "products.product" } },
 			])
 			.sort({ createdAt: -1 })
 			.skip(skip)
@@ -145,7 +51,7 @@ export const getOrderById = async (req, res) => {
 		const { id } = req.params;
 
 		const order = await Order.findById(id).populate([
-			{ path: "orderItems", populate: { path: "product" } },
+			{ path: "orderItems", populate: { path: "products.product" } },
 		]);
 
 		if (!order) {
@@ -261,7 +167,7 @@ export const getOrdersByConsumer = async (req, res) => {
 
 		const orders = await Order.find({ consumer: req.userId })
 			.populate([
-				{ path: "orderItems", populate: { path: "product" } },
+				{ path: "orderItems", populate: { path: "products.product" } },
 			])
 			.sort({ createdAt: -1 })
 			.skip(skip)
@@ -339,13 +245,16 @@ export const createOrderFromCart = async (req, res) => {
 			});
 		}
 
-		// Get cart with items
+		// Get cart with items and products
 		const cart = await Cart.findOne({
 			consumer: req.userId,
 			status: "active",
 		}).populate({
 			path: "items",
-			populate: [{ path: "product" }, { path: "farmer" }],
+			populate: [
+				{ path: "products.product" },
+				{ path: "farmer" }
+			],
 		});
 
 		if (!cart || cart.items.length === 0) {
@@ -407,36 +316,41 @@ export const createOrderFromCart = async (req, res) => {
 
 		await order.save();
 
-		// Create order items 
+		// Create order items for each CartItem (grouped by farmer)
 		const orderItems = [];
 		for (const cartItem of cart.items) {
-			// Check product availability
-			const product = await Product.findById(cartItem.product._id);
-			if (!product || product.quantity < cartItem.quantity) {
-				// If product is not available, delete the order and return error
-				await Order.findByIdAndDelete(order._id);
-				return res.status(400).json({
-					success: false,
-					message: `Insufficient quantity for product: ${product.name}`,
-				});
+			// Check all products for availability first
+			for (const p of cartItem.products) {
+				const dbProduct = await Product.findById(p.product._id || p.product);
+				if (!dbProduct || dbProduct.quantity < p.quantity) {
+					// If product is not available, delete the order and return error
+					await Order.findByIdAndDelete(order._id);
+					return res.status(400).json({
+						success: false,
+						message: `Insufficient quantity for product: ${dbProduct ? dbProduct.name : p.product._id || p.product}`,
+					});
+				}
 			}
-
-			// Create order item
+			// Create grouped order item for this farmer
 			const orderItem = new OrderItem({
 				order: order._id,
-				product: cartItem.product._id,
-				quantity: cartItem.quantity,
-				unitPrice: cartItem.unitPrice,
-				subtotal: cartItem.subtotal,
-				farmer: product.farmer, // Set the farmer from the product
+				farmer: cartItem.farmer?._id || cartItem.farmer,
+				products: cartItem.products.map(p => ({
+					product: p.product._id || p.product,
+					quantity: p.quantity,
+					unitPrice: p.unitPrice,
+					subtotal: p.subtotal,
+				})),
 				status: "pending",
 			});
 			await orderItem.save();
 			orderItems.push(orderItem._id);
-
-			// Update product quantity
-			product.quantity -= cartItem.quantity;
-			await product.save();
+			// Update product quantities
+			for (const p of cartItem.products) {
+				const dbProduct = await Product.findById(p.product._id || p.product);
+				dbProduct.quantity -= p.quantity;
+				await dbProduct.save();
+			}
 		}
 
 		// Update order with order items
@@ -444,15 +358,29 @@ export const createOrderFromCart = async (req, res) => {
 		await order.save();
 
 		// Delete cart and its items
-		await CartItem.deleteMany({ _id: { $in: cart.items } });
+		await CartItem.deleteMany({ _id: { $in: cart.items.map(i => i._id) } });
 		await Cart.findByIdAndDelete(cart._id);
 
-		// Populate order details
+		// Populate order details (including product image, name, and farmName)
 		await order.populate([
-			{ path: "orderItems", populate: { path: "product" } },
+			{
+				path: "orderItems",
+				populate: {
+					path: "products.product",
+					select: "name imagePath measurement farmer",
+					populate: { path: "farmer", select: "farmName" }
+				}
+			},
 			{ path: "shippingAddress" },
 		]);
 
+		// Add debug log before sending order confirmation email
+		console.log('DEBUG: Populated logged-in user order for email:', JSON.stringify(order, null, 2));
+		await sendOrderConfirmationEmail(
+			consumer.email,
+			consumer.name,
+			order
+		);
 		res.status(201).json({
 			success: true,
 			message: "Order created and payment initiated",
@@ -546,7 +474,7 @@ export const getOrdersByFarmer = async (req, res) => {
 					path: "orderItems",
 					populate: [
 						{
-							path: "product",
+							path: "products.product",
 							match: { farmer: req.userId },
 						},
 					],
@@ -566,7 +494,7 @@ export const getOrdersByFarmer = async (req, res) => {
 
 		// Filter out orders where all products are null (from the match condition)
 		const filteredOrders = orders.filter((order) =>
-			order.orderItems.some((item) => item.product !== null),
+			order.orderItems.some((item) => item.products.product !== null),
 		);
 		console.log("Filtered orders:", filteredOrders.length);
 
@@ -606,7 +534,7 @@ export const updateOrderItemStatus = async (req, res) => {
 		}
 
 		// Find the order item and verify it belongs to this farmer
-		const orderItem = await OrderItem.findById(orderItemId).populate("product");
+		const orderItem = await OrderItem.findById(orderItemId).populate("products.product");
 
 		if (!orderItem) {
 			return res.status(404).json({
@@ -616,7 +544,7 @@ export const updateOrderItemStatus = async (req, res) => {
 		}
 
 		// Verify the product belongs to this farmer
-		if (orderItem.product.farmer.toString() !== req.userId) {
+		if (orderItem.products.product.farmer.toString() !== req.userId) {
 			return res.status(403).json({
 				success: false,
 				message: "You are not authorized to update this order item",
@@ -732,11 +660,13 @@ export const createGuestOrder = async (req, res) => {
 			const product = await Product.findById(item.productId);
 			const orderItem = new OrderItem({
 				order: order._id,
-				product: item.productId,
-				quantity: item.quantity,
-				unitPrice: item.unitPrice || product.price,
-				subtotal: (item.unitPrice || product.price) * item.quantity,
 				farmer: product.farmer,
+				products: [{
+					product: item.productId,
+					quantity: item.quantity,
+					unitPrice: item.unitPrice || product.price,
+					subtotal: (item.unitPrice || product.price) * item.quantity,
+				}],
 				status: "pending",
 			});
 			await orderItem.save();
@@ -749,9 +679,25 @@ export const createGuestOrder = async (req, res) => {
 		order.orderItems = orderItemIds;
 		await order.save();
 		await order.populate([
-			{ path: "orderItems", populate: { path: "product" } },
+			{
+				path: "orderItems",
+				populate: {
+					path: "products.product",
+					select: "name imagePath measurement farmer",
+					populate: { path: "farmer", select: "farmName" }
+				}
+			},
 			{ path: "shippingAddress" },
 		]);
+
+		// Add debug log before sending order confirmation email
+		console.log('DEBUG: Populated guest order for email:', JSON.stringify(order, null, 2));
+		await sendOrderConfirmationEmail(
+			contactInfo.email,
+			contactInfo.name,
+			order
+		);
+
 		console.log("Guest order created successfully:", order);
 		res.status(201).json({
 			success: true,

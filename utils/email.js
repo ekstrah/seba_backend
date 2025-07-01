@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import nodemailer from "nodemailer";
 import mjml2html from "mjml";
 import fs from 'fs/promises';
