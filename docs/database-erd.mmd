@@ -1,0 +1,94 @@
+erDiagram
+  USER {
+    string _id
+    string name
+    string email
+    string password
+    string role
+  }
+  FARMER {
+    string _id
+    string name
+    string email
+    string password
+    string farmDetails
+  }
+  CONSUMER {
+    string _id
+    string name
+    string email
+    string password
+  }
+  PRODUCT {
+    string _id
+    string name
+    string description
+    number price
+    string category
+    int stock
+    string farmerId
+  }
+  CATEGORY {
+    string _id
+    string name
+    string description
+  }
+  ORDER {
+    string _id
+    string userId
+    number total
+    string status
+    string paymentInfo
+    date createdAt
+  }
+  ORDERITEM {
+    string _id
+    string orderId
+    string productId
+    int quantity
+    number price
+  }
+  CART {
+    string _id
+    string userId
+  }
+  CARTITEM {
+    string _id
+    string cartId
+    string productId
+    int quantity
+  }
+  REVIEW {
+    string _id
+    string userId
+    string productId
+    int rating
+    string comment
+    date createdAt
+  }
+  ADDRESS {
+    string _id
+    string userId
+    string street
+    string city
+    string zip
+    string country
+  }
+
+  USER ||--o{ ADDRESS : has
+  USER ||--o{ ORDER : places
+  USER ||--o{ REVIEW : writes
+  USER ||--o{ CART : owns
+  FARMER ||--o{ PRODUCT : owns
+  CONSUMER ||--o{ ORDER : places
+  CONSUMER ||--o{ REVIEW : writes
+  CONSUMER ||--o{ CART : owns
+  PRODUCT ||--o{ REVIEW : receives
+  PRODUCT ||--o{ ORDERITEM : contains
+  PRODUCT }o--|| CATEGORY : belongs_to
+  ORDER ||--o{ ORDERITEM : contains
+  ORDERITEM }o--|| PRODUCT : references
+  CART ||--o{ CARTITEM : contains
+  CARTITEM }o--|| PRODUCT : references
+  REVIEW }o--|| PRODUCT : reviews
+  ADDRESS }o--|| USER : belongs_to 

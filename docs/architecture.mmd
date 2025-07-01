@@ -1,0 +1,57 @@
+flowchart TD
+  subgraph Client Side
+    Client["Client (Frontend, Postman, etc.)"]
+  end
+
+  subgraph API Layer
+    API["Express.js REST API"]
+    Routes["Routes"]
+    Middleware["Middleware (Auth, Authorization, Validation, Error Handling)"]
+  end
+
+  subgraph Business Logic
+    Controllers["Controllers (auth, user, product, order, cart, review, address, stripeWebhook, email)"]
+  end
+
+  subgraph Data Layer
+    Models["Mongoose Models (User, Farmer, Consumer, Product, Category, Order, OrderItem, Cart, CartItem, Review, Address)"]
+    MongoDB["MongoDB Database"]
+  end
+
+  subgraph External Services
+    Email["Email Service (MJML, Nodemailer)"]
+    Stripe["Stripe Payment Gateway"]
+  end
+
+  subgraph Utilities
+    Utils["Utils (email, logger, ratingCalculator, test data, etc.)"]
+  end
+
+  subgraph Containerization
+    Docker["Docker (Dev/Test)"]
+  end
+
+  Client -->|HTTP Requests| API
+  API --> Routes
+  Routes --> Middleware
+  Middleware --> Controllers
+  Controllers --> Models
+  Models --> MongoDB
+  Controllers --> Email
+  Controllers --> Stripe
+  Controllers --> Utils
+  API --> Docker
+  Docker --> API
+
+  %% Authentication & Authorization Flows
+  Middleware -.->|JWT Verification| AuthFlow["JWT Auth Flow"]
+  AuthFlow -.-> Controllers
+  Middleware -.->|Role/Permission Check| AuthZFlow["Authorization Flow"]
+  AuthZFlow -.-> Controllers
+
+  %% Email and Payment
+  Controllers -->|Send Emails| Email
+  Controllers -->|Process Payments| Stripe
+
+  %% Test Data
+  Utils --> Models 

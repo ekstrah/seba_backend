@@ -1,0 +1,92 @@
+classDiagram
+  class User {
+    string _id
+    string name
+    string email
+    string password
+    string role
+  }
+  class Farmer {
+    string _id
+    string name
+    string email
+    string password
+    string farmDetails
+  }
+  class Consumer {
+    string _id
+    string name
+    string email
+    string password
+  }
+  class Product {
+    string _id
+    string name
+    string description
+    number price
+    string category
+    int stock
+    string farmerId
+  }
+  class Category {
+    string _id
+    string name
+    string description
+  }
+  class Order {
+    string _id
+    string userId
+    number total
+    string status
+    string paymentInfo
+    date createdAt
+  }
+  class OrderItem {
+    string _id
+    string productId
+    int quantity
+    number price
+  }
+  class Cart {
+    string _id
+    string userId
+  }
+  class CartItem {
+    string _id
+    string productId
+    int quantity
+  }
+  class Review {
+    string _id
+    string userId
+    string productId
+    int rating
+    string comment
+    date createdAt
+  }
+  class Address {
+    string _id
+    string userId
+    string street
+    string city
+    string zip
+    string country
+  }
+
+  User "1" -- "*" Address : has
+  User "1" -- "*" Order : places
+  User "1" -- "*" Review : writes
+  User "1" -- "*" Cart : owns
+  Farmer "1" -- "*" Product : owns
+  Consumer "1" -- "*" Order : places
+  Consumer "1" -- "*" Review : writes
+  Consumer "1" -- "*" Cart : owns
+  Product "1" -- "*" Review : receives
+  Product "1" -- "*" OrderItem : contains
+  Product "*" -- "1" Category : belongs_to
+  Order "1" *-- "*" OrderItem : contains
+  OrderItem "*" -- "1" Product : references
+  Cart "1" *-- "*" CartItem : contains
+  CartItem "*" -- "1" Product : references
+  Review "*" -- "1" Product : reviews
+  Address "*" -- "1" User : belongs_to 
