@@ -20,17 +20,11 @@ router.get("/", authorize('getOrCreateCart'), getOrCreateCart);
 // Add item to cart
 router.post("/items", authorize('addToCart'), addToCart);
 
-// Update specific product in a cart item
+// Update specific product in a cart item (farmer group)
 router.put("/items/:cartItemId/product/:productId", authorize('updateCartItem'), updateCartItem);
 
-// Remove specific product from a cart item
+// Remove specific product from a cart item (farmer group)
 router.delete("/items/:cartItemId/product/:productId", authorize('removeFromCart'), removeFromCart);
-
-// Update cart item quantity
-router.put("/items/:cartItemId", authorize('updateCartItem'), updateCartItem);
-
-// Remove item from cart
-router.delete("/items/:cartItemId", authorize('removeFromCart'), removeFromCart);
 
 // Clear cart
 router.delete("/", authorize('clearCart'), clearCart);

@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
+import { User } from "../models/user.model.js";
+import logger from "../utils/logger.js";
 
-export const verifyToken = (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
 	const token = req.cookies.token;
 	if (!token)
 		return res
@@ -13,9 +15,15 @@ export const verifyToken = (req, res, next) => {
 				.status(401)
 				.json({ success: false, message: "Unauthorized - invalid token" });
 		req.userId = decoded.userId;
+		// Fetch user and attach to req
+		const user = await User.findById(decoded.userId);
+		if (!user) {
+			return res.status(401).json({ success: false, message: "User not found" });
+		}
+		req.user = user; // This will include the role
 		next();
 	} catch (error) {
-		console.log("Error in verifyToken ", error);
+		logger.error("Error in verifyToken ", error);
 		return res.status(500).json({ success: false, message: "Server Error" });
 	}
 };

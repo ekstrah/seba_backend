@@ -1,5 +1,6 @@
 import { Address } from "../models/address.model.js";
 import { Consumer } from "../models/consumer.model.js";
+import logger from "../utils/logger.js";
 
 // Get all addresses for the current user
 export const getAddresses = async (req, res) => {
@@ -58,7 +59,7 @@ export const addAddress = async (req, res) => {
 			address,
 		});
 	} catch (error) {
-		console.error("Error in addAddress:", error);
+		logger.error("Error in addAddress:", error);
 		if (error.code === 11000) {
 			return res.status(400).json({
 				success: false,
@@ -97,7 +98,7 @@ export const updateAddress = async (req, res) => {
 			address,
 		});
 	} catch (error) {
-		console.error("Error in updateAddress:", error);
+		logger.error("Error in updateAddress:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -136,7 +137,7 @@ export const deleteAddress = async (req, res) => {
 			message: "Address deleted successfully",
 		});
 	} catch (error) {
-		console.error("Error in deleteAddress:", error);
+		logger.error("Error in deleteAddress:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",

@@ -1,5 +1,6 @@
 import { Category } from "../models/category.model.js";
 import { Product } from "../models/product.model.js";
+import logger from "../utils/logger.js";
 
 export const oCreate = async (req, res) => {
 	const { name, description } = req.body;
@@ -71,7 +72,7 @@ export const oDelete = async (req, res) => {
 			category,
 		});
 	} catch (error) {
-		console.error("Error deleting category:", error);
+		logger.error("Error deleting category:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -96,7 +97,7 @@ export const oReadAll = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.log("error in oReadAll Category ", error);
+		logger.info("error in oReadAll Category ", error);
 		res.status(500).json({ success: false, message: "Server error" });
 	}
 };

@@ -1,6 +1,6 @@
 import { Cart } from "../models/cart.model.js";
-import { CartItem } from "../models/cartItem.model.js";
 import { Product } from "../models/product.model.js";
+import logger from "../utils/logger.js";
 
 // Get or create cart for consumer
 export const getOrCreateCart = async (req, res) => {
@@ -9,11 +9,7 @@ export const getOrCreateCart = async (req, res) => {
 			consumer: req.userId,
 			status: "active",
 		}).populate({
-			path: "items",
-			populate: [
-				{ path: "products.product" },
-				{ path: "farmer" }
-			],
+			path: "items.products.product items.farmer"
 		});
 
 		if (!cart) {
@@ -27,7 +23,7 @@ export const getOrCreateCart = async (req, res) => {
 
 		// Calculate totals by farmer
 		const farmerTotals = cart.items.reduce((totals, item) => {
-			const farmerId = item.farmer._id.toString();
+			const farmerId = item.farmer.toString();
 			if (!totals[farmerId]) {
 				totals[farmerId] = {
 					farmer: item.farmer,
@@ -49,7 +45,7 @@ export const getOrCreateCart = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error("Error in getOrCreateCart:", error);
+		logger.error("Error in getOrCreateCart:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -100,12 +96,8 @@ export const addToCart = async (req, res) => {
 			});
 		}
 
-		// Find CartItem for this farmer in the cart
-		let cartItem = await CartItem.findOne({
-			_id: { $in: cart.items },
-			farmer: product.farmer._id,
-		});
-
+		// Find item for this farmer in the cart
+		let cartItem = cart.items.find(item => item.farmer.toString() === product.farmer._id.toString());
 		let productInCart = null;
 		if (cartItem) {
 			// Check if product already exists in products array
@@ -124,10 +116,11 @@ export const addToCart = async (req, res) => {
 					subtotal: quantity * unitPrice,
 				});
 			}
-			await cartItem.save();
+			// Update item subtotal
+			cartItem.subtotal = cartItem.products.reduce((sum, p) => sum + p.subtotal, 0);
 		} else {
-			// Create new CartItem for this farmer
-			cartItem = new CartItem({
+			// Create new item for this farmer
+			cartItem = {
 				farmer: product.farmer._id,
 				products: [{
 					product: productId,
@@ -136,29 +129,16 @@ export const addToCart = async (req, res) => {
 					subtotal: quantity * unitPrice,
 				}],
 				subtotal: quantity * unitPrice,
-			});
-			await cartItem.save();
-			cart.items.push(cartItem._id);
+			};
+			cart.items.push(cartItem);
 		}
 
-		// Update cart total
-		cart.totalAmount = (
-			await CartItem.find({ _id: { $in: cart.items } })
-		).reduce((sum, item) => sum + item.subtotal, 0);
 		await cart.save();
-
-		// Populate cart details
-		await cart.populate({
-			path: "items",
-			populate: [
-				{ path: "products.product" },
-				{ path: "farmer" }
-			],
-		});
+		await cart.populate({ path: "items.products.product items.farmer" });
 
 		// Calculate totals by farmer
 		const farmerTotals = cart.items.reduce((totals, item) => {
-			const farmerId = item.farmer._id.toString();
+			const farmerId = item.farmer.toString();
 			if (!totals[farmerId]) {
 				totals[farmerId] = {
 					farmer: item.farmer,
@@ -182,7 +162,7 @@ export const addToCart = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error("Error in addToCart:", error);
+		logger.error("Error in addToCart:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -190,7 +170,7 @@ export const addToCart = async (req, res) => {
 	}
 };
 
-// Update cart item quantity (for a specific product in a CartItem)
+// Update cart item quantity (for a specific product in a farmer group)
 export const updateCartItem = async (req, res) => {
 	try {
 		const { cartItemId, productId } = req.params;
@@ -203,7 +183,18 @@ export const updateCartItem = async (req, res) => {
 			});
 		}
 
-		const cartItem = await CartItem.findById(cartItemId);
+		let cart = await Cart.findOne({
+			consumer: req.userId,
+			status: "active",
+		});
+		if (!cart) {
+			return res.status(404).json({
+				success: false,
+				message: "Cart not found",
+			});
+		}
+
+		const cartItem = cart.items.id(cartItemId) || cart.items.find(item => item._id?.toString() === cartItemId);
 		if (!cartItem) {
 			return res.status(404).json({
 				success: false,
@@ -211,7 +202,6 @@ export const updateCartItem = async (req, res) => {
 			});
 		}
 
-		// Find the product in the products array
 		const productInCart = cartItem.products.find(p => p.product.toString() === productId);
 		if (!productInCart) {
 			return res.status(404).json({
@@ -220,34 +210,19 @@ export const updateCartItem = async (req, res) => {
 			});
 		}
 
-		// Update quantity and subtotal
 		productInCart.quantity = quantity;
 		productInCart.subtotal = productInCart.quantity * productInCart.unitPrice;
-		await cartItem.save();
-
-		// Update cartItem subtotal (handled by pre-save hook)
-		await cartItem.save();
-
-		// Update cart total
-		const cart = await Cart.findOne({
-			consumer: req.userId,
-			status: "active",
-			items: cartItemId,
-		});
-		if (cart) {
-			cart.totalAmount = (
-				await CartItem.find({ _id: { $in: cart.items } })
-			).reduce((sum, item) => sum + item.subtotal, 0);
-			await cart.save();
-		}
+		cartItem.subtotal = cartItem.products.reduce((sum, p) => sum + p.subtotal, 0);
+		await cart.save();
+		await cart.populate({ path: "items.products.product items.farmer" });
 
 		res.status(200).json({
 			success: true,
 			message: "Cart item updated successfully",
-			cartItem,
+			cart,
 		});
 	} catch (error) {
-		console.error("Error in updateCartItem:", error);
+		logger.error("Error in updateCartItem:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -255,13 +230,24 @@ export const updateCartItem = async (req, res) => {
 	}
 };
 
-// Remove product from cart (from a CartItem's products array)
+// Remove product from cart (from a farmer group)
 export const removeFromCart = async (req, res) => {
 	try {
 		const { cartItemId, productId } = req.params;
 		const quantity = req.body?.quantity;
 
-		const cartItem = await CartItem.findById(cartItemId);
+		let cart = await Cart.findOne({
+			consumer: req.userId,
+			status: "active",
+		});
+		if (!cart) {
+			return res.status(404).json({
+				success: false,
+				message: "Cart not found",
+			});
+		}
+
+		const cartItem = cart.items.id(cartItemId) || cart.items.find(item => item._id?.toString() === cartItemId);
 		if (!cartItem) {
 			return res.status(404).json({
 				success: false,
@@ -269,7 +255,6 @@ export const removeFromCart = async (req, res) => {
 			});
 		}
 
-		// Find the product in the products array
 		const productIndex = cartItem.products.findIndex(p => p.product.toString() === productId);
 		if (productIndex === -1) {
 			return res.status(404).json({
@@ -280,80 +265,28 @@ export const removeFromCart = async (req, res) => {
 
 		const productInCart = cartItem.products[productIndex];
 
-		// Only decrement if quantity is provided and less than current quantity
 		if (quantity && quantity < productInCart.quantity) {
 			productInCart.quantity -= quantity;
 			productInCart.subtotal = productInCart.quantity * productInCart.unitPrice;
-			await cartItem.save();
 		} else {
-			// Remove the product from the products array
 			cartItem.products.splice(productIndex, 1);
-			await cartItem.save();
 		}
 
-		// If products array is empty, remove the CartItem from the cart and delete it
-		let cart;
+		// If products array is empty, remove the cart item (farmer group)
 		if (cartItem.products.length === 0) {
-			cart = await Cart.findOne({
-				consumer: req.userId,
-				status: "active",
-				items: cartItemId,
-			});
-			if (cart) {
-				cart.items = cart.items.filter((item) => item.toString() !== cartItemId);
-				await cart.save();
-			}
-			await CartItem.findByIdAndDelete(cartItemId);
-		} else {
-			// Otherwise, update the cart total
-			cart = await Cart.findOne({
-				consumer: req.userId,
-				status: "active",
-				items: cartItemId,
-			});
-			if (cart) {
-				cart.totalAmount = (
-					await CartItem.find({ _id: { $in: cart.items } })
-				).reduce((sum, item) => sum + item.subtotal, 0);
-				await cart.save();
-			}
+			cart.items = cart.items.filter(item => item !== cartItem && item._id?.toString() !== cartItemId);
 		}
 
-		// Populate cart details
-		if (cart) {
-			await cart.populate({
-				path: "items",
-				populate: [
-					{ path: "products.product" },
-					{ path: "farmer" }
-				],
-			});
-		}
-
-		const farmerTotals = cart && cart.items ? cart.items.reduce((totals, item) => {
-			const farmerId = item.farmer._id.toString();
-			if (!totals[farmerId]) {
-				totals[farmerId] = {
-					farmer: item.farmer,
-					totalAmount: 0,
-					itemCount: 0,
-				};
-			}
-			totals[farmerId].totalAmount += item.subtotal;
-			totals[farmerId].itemCount += item.products.reduce((sum, p) => sum + p.quantity, 0);
-			return totals;
-		}, {}) : {};
+		await cart.save();
+		await cart.populate({ path: "items.products.product items.farmer" });
 
 		res.status(200).json({
 			success: true,
 			message: "Product removed from cart successfully",
-			cart: cart ? {
-				...cart.toObject(),
-				farmerTotals: Object.values(farmerTotals),
-			} : null,
+			cart,
 		});
 	} catch (error) {
-		console.error("Error in removeFromCart:", error);
+		logger.error("Error in removeFromCart:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -376,10 +309,6 @@ export const clearCart = async (req, res) => {
 			});
 		}
 
-		// Delete all cart items
-		await CartItem.deleteMany({ _id: { $in: cart.items } });
-
-		// Reset cart
 		cart.items = [];
 		cart.totalAmount = 0;
 		await cart.save();
@@ -390,7 +319,7 @@ export const clearCart = async (req, res) => {
 			cart,
 		});
 	} catch (error) {
-		console.error("Error in clearCart:", error);
+		logger.error("Error in clearCart:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",

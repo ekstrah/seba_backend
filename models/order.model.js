@@ -1,5 +1,54 @@
 import mongoose from "mongoose";
 
+const orderProductSchema = new mongoose.Schema(
+	{
+		product: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Product",
+			required: true,
+		},
+		quantity: {
+			type: Number,
+			required: true,
+			min: 1,
+		},
+		unitPrice: {
+			type: Number,
+			required: true,
+			min: 0,
+		},
+		subtotal: {
+			type: Number,
+			required: true,
+			min: 0,
+		},
+	},
+	{ _id: false }
+);
+
+const orderItemSchema = new mongoose.Schema(
+	{
+		farmer: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Farmer",
+			required: true,
+		},
+		products: [orderProductSchema],
+		subtotal: {
+			type: Number,
+			required: true,
+			min: 0,
+			default: 0,
+		},
+		status: {
+			type: String,
+			enum: ["pending", "accepted", "sent", "delivered", "cancelled"],
+			default: "pending",
+		},
+	},
+	{ _id: false }
+);
+
 const orderSchema = new mongoose.Schema(
 	{
 		consumer: {
@@ -7,13 +56,7 @@ const orderSchema = new mongoose.Schema(
 			ref: "Consumer",
 			required: false,
 		},
-		orderItems: [
-			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: "OrderItem",
-				required: true,
-			},
-		],
+		orderItems: [orderItemSchema],
 		totalAmount: {
 			type: Number,
 			required: true,
@@ -82,6 +125,17 @@ const orderSchema = new mongoose.Schema(
 	},
 	{ timestamps: true },
 );
+
+// Pre-save middleware to calculate subtotals
+orderSchema.pre("save", function (next) {
+	// Calculate subtotal for each item (sum of product subtotals)
+	this.orderItems.forEach(item => {
+		item.subtotal = item.products.reduce((sum, p) => sum + (p.subtotal || (p.quantity * p.unitPrice)), 0);
+	});
+	// Calculate totalAmount for the order (sum of item subtotals)
+	this.totalAmount = this.orderItems.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+	next();
+});
 
 // Indexes for faster queries
 orderSchema.index({ consumer: 1 });

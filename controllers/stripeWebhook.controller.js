@@ -1,4 +1,5 @@
 import stripe from '../utils/stripe.js';
+import logger from "../utils/logger.js";
 
 // Minimal Stripe webhook handler
 export const stripeWebhook = async (req, res) => {
@@ -12,7 +13,7 @@ export const stripeWebhook = async (req, res) => {
       process.env.STRIPE_WEBHOOK_SECRET // Set this in your .env
     );
   } catch (err) {
-    console.error('Webhook signature verification failed.', err.message);
+    logger.error('Webhook signature verification failed.', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -20,7 +21,7 @@ export const stripeWebhook = async (req, res) => {
   if (event.type === 'payment_intent.succeeded') {
     const paymentIntent = event.data.object;
     // TODO: Update your order/payment record as paid
-    console.log('PaymentIntent was successful!', paymentIntent.id);
+    logger.info('PaymentIntent was successful!', paymentIntent.id);
   }
   // Add more event types as needed
 
@@ -29,7 +30,7 @@ export const stripeWebhook = async (req, res) => {
 
 // Create a SetupIntent for saving a card
 export const createSetupIntent = async (req, res) => {
-  console.log('createSetupIntent endpoint was called');
+  logger.info('createSetupIntent endpoint was called');
   try {
     const { Consumer } = await import('../models/consumer.model.js');
     let consumer = await Consumer.findById(req.userId);
@@ -51,17 +52,17 @@ export const createSetupIntent = async (req, res) => {
       consumer = await Consumer.findById(req.userId);
       if (consumer.stripeCustomerId && consumer.stripeCustomerId !== createdCustomerId) {
         // Another request already set a different customer, so delete the extra one
-        console.warn('Race condition: deleting extra Stripe customer', createdCustomerId);
+        logger.warn('Race condition: deleting extra Stripe customer', createdCustomerId);
         await stripe.customers.del(createdCustomerId);
       }
     }
-    console.log('Creating SetupIntent for consumer:', consumer._id, 'stripeCustomerId:', consumer.stripeCustomerId);
+    logger.info('Creating SetupIntent for consumer:', consumer._id, 'stripeCustomerId:', consumer.stripeCustomerId);
     const setupIntent = await stripe.setupIntents.create({
       customer: consumer.stripeCustomerId,
     });
     res.json({ clientSecret: setupIntent.client_secret });
   } catch (error) {
-    console.error("Error in createSetupIntent:", error);
+    logger.error("Error in createSetupIntent:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 }; 

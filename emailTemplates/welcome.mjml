@@ -21,31 +21,29 @@
   <mj-body background-color="#f0fdf4">
     <mj-section css-class="body-section">
       <mj-column>
-        <mj-image width="180px" src="https://placehold.co/180x60/166534/FFFFFF?text=FreshFarm" alt="FreshFarm Logo" />
+        <mj-image width="450px" src="https://i.imgur.com/M38Ks4y.png" alt="FrischeFarm Logo" />
       </mj-column>
     </mj-section>
 
     <mj-section css-class="body-section" padding="0">
       <mj-column padding="0">
-        <mj-image src="https://placehold.co/600x300/65a30d/FFFFFF?text=Welcome+to+FreshFarm!" alt="Smiling person holding fresh produce" fluid-on-mobile="true" padding="0" />
+        <mj-image src="https://placehold.co/600x300/65a30d/FFFFFF?text=Welcome+to+FrischeFarm!" alt="Smiling person holding fresh produce" fluid-on-mobile="true" padding="0" />
       </mj-column>
     </mj-section>
 
     <mj-section css-class="body-section">
       <mj-column>
-        <mj-text align="center" font-size="26px" font-weight="bold" color="#166534">
-          <h1>Welcome to FreshFarm!</h1>
-        </mj-text>
+
         <mj-text>
-          <p>Hello [User's Name],</p>
-          <p>We're thrilled to have you join the FreshFarm community! Get ready to enjoy the freshest produce directly from local farms, delivered right to your doorstep.</p>
-          <p>Your account has been successfully created. We're excited for you to discover a world of delicious, locally sourced goodness with FreshFarm.</p>
+          <p>Hello {{name}},</p>
+          <p>We're thrilled to have you join the FrischeFarm community! Get ready to enjoy the freshest produce directly from local farms, delivered right to your doorstep.</p>
+          <p>Your account has been successfully created. We're excited for you to discover a world of delicious, locally sourced goodness with FrischeFarm.</p>
         </mj-text>
         <mj-button href="https://example.com/shop" align="center">
           Start Shopping for Fresh Produce
         </mj-button>
         <mj-text padding-top="20px">
-          <p>Here’s what you can do next:</p>
+          <p>Here's what you can do next:</p>
           <ul>
             <li><strong>Explore our farms:</strong> Learn about the dedicated local farmers who grow your food.</li>
             <li><strong>Customize your preferences:</strong> Set your delivery schedule and favorite produce types.</li>
@@ -55,38 +53,12 @@
       </mj-column>
     </mj-section>
 
-    <mj-section css-class="body-section" padding-bottom="20px">
-      <mj-column>
-        <mj-text align="center" font-size="22px" font-weight="bold" color="#166534">
-          <h2>What's Popular This Week</h2>
-        </mj-text>
-      </mj-column>
-    </mj-section>
-    <mj-section css-class="body-section" padding-bottom="20px">
-      <mj-column>
-        <mj-image width="150px" src="https://placehold.co/150x150/ef4444/ffffff?text=Tomatoes" alt="Heirloom Tomatoes" border-radius="10px" />
-        <mj-text align="center" font-weight="bold" color="#18181b">Heirloom Tomatoes</mj-text>
-      </mj-column>
-      <mj-column>
-        <mj-image width="150px" src="https://placehold.co/150x150/f97316/ffffff?text=Carrots" alt="Organic Carrots" border-radius="10px" />
-        <mj-text align="center" font-weight="bold" color="#18181b">Organic Carrots</mj-text>
-      </mj-column>
-      <mj-column>
-        <mj-image width="150px" src="https://placehold.co/150x150/22c55e/ffffff?text=Lettuce" alt="Crisp Lettuce" border-radius="10px" />
-        <mj-text align="center" font-weight="bold" color="#18181b">Crisp Lettuce</mj-text>
-      </mj-column>
-    </mj-section>
+   
 
     <mj-section>
       <mj-column>
-        <mj-social font-size="15px" icon-size="24px" mode="horizontal">
-          <mj-social-element name="facebook" href="https://mjml.io/"></mj-social-element>
-          <mj-social-element name="instagram" href="https://mjml.io/"></mj-social-element>
-          <mj-social-element name="twitter" href="https://mjml.io/"></mj-social-element>
-        </mj-social>
         <mj-text align="center" font-size="12px" line-height="1.5" color="#555555">
-          <p>You received this email because you created an account with FreshFarm. <br /> © 2024 FreshFarm Inc. All rights reserved.</p>
-          <p><a href="#" style="color: #555555; text-decoration: underline;">Unsubscribe</a> | <a href="#" style="color: #555555; text-decoration: underline;">Manage Preferences</a></p>
+          <p>You received this email because you created an account with FrischeFarm. <br /> © 2025 FrischeFarm Inc. All rights reserved.</p>
         </mj-text>
       </mj-column>
     </mj-section>

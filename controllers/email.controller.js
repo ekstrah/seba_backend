@@ -38,7 +38,7 @@ export const sendResetPasswordEmail = async (to, name, tempPassword, resetLink, 
 
 export const sendOrderConfirmationEmail = async (to, name, order) => {
   const plainOrder = JSON.parse(JSON.stringify(order));
-  // Flatten farmer info for each orderItem
+  // Flatten farmer info for each orderItem and round subtotals
   if (plainOrder.orderItems) {
     plainOrder.orderItems.forEach(orderItem => {
       // Flatten farmer info from the first product
@@ -50,12 +50,17 @@ export const sendOrderConfirmationEmail = async (to, name, order) => {
         imagePath: p.product?.imagePath,
         measurement: p.product?.measurement,
         quantity: p.quantity,
-        unitPrice: p.unitPrice,
-        subtotal: p.subtotal
+        unitPrice: p.unitPrice !== undefined ? Number(p.unitPrice).toFixed(2) : undefined,
+        subtotal: p.subtotal !== undefined ? Number(p.subtotal).toFixed(2) : undefined
       }));
+      if (orderItem.subtotal !== undefined) {
+        orderItem.subtotal = Number(orderItem.subtotal).toFixed(2);
+      }
     });
   }
-  console.log('DEBUG plainOrder for email:', JSON.stringify(plainOrder, null, 2));
+  if (plainOrder.totalAmount !== undefined) {
+    plainOrder.totalAmount = Number(plainOrder.totalAmount).toFixed(2);
+  }
   const html = await renderTemplate('orderConfirmEmail', { name, order: plainOrder });
   return sendEmail({
     from: process.env.SMTP_USER,

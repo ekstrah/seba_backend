@@ -5,6 +5,7 @@ import { Farmer } from "../models/farmer.model.js";
 import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import stripe from '../utils/stripe.js';
+import logger from "../utils/logger.js";
 
 export const signup = async (req, res) => {
 	const { email, password, name, phone, role } = req.body;
@@ -15,7 +16,7 @@ export const signup = async (req, res) => {
 		}
 
 		const userAlreadyExists = await User.findOne({ email });
-		console.log("userAlreadyExists", userAlreadyExists);
+		logger.info("userAlreadyExists", userAlreadyExists);
 
 		if (userAlreadyExists) {
 			return res
@@ -122,7 +123,7 @@ export const verifyEmail = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.log("error in verifyEmail ", error);
+		logger.error("error in verifyEmail ", error);
 		res.status(500).json({ success: false, message: "Server error" });
 	}
 };
@@ -157,7 +158,7 @@ export const login = async (req, res) => {
 			token,
 		});
 	} catch (error) {
-		console.log("Error in login: ", error);
+		logger.error("Error in login: ", error);
 		res.status(400).json({ success: false, message: error.message });
 	}
 };
@@ -189,7 +190,7 @@ export const forgotPassword = async (req, res) => {
 			message: "Temporary password sent to your email. Please check your inbox.",
 		});
 	} catch (error) {
-		console.log("Error in forgotPassword ", error);
+		logger.error("Error in forgotPassword ", error);
 		res.status(400).json({ sucess: false, message: error.message });
 	}
 };
@@ -220,7 +221,7 @@ export const resetPassword = async (req, res) => {
 		await sendVerificationEmail(user.email, user.name);
 		res.status(200).json({ sucess: true, message: "Password reset sucessful" });
 	} catch (error) {
-		console.log("Error in resetPassword ", error);
+		logger.error("Error in resetPassword ", error);
 		res.status(400).json({ sucess: false, message: error.message });
 	}
 };
@@ -233,7 +234,7 @@ export const checkAuth = async (req, res) => {
 		}
 		res.status(200).json({ sucess: true, user });
 	} catch (error) {
-		console.log("Error in checkAuth ", error);
+		logger.error("Error in checkAuth ", error);
 		res.status(400).json({ sucess: false, message: error.message });
 	}
 };

@@ -51,7 +51,7 @@
     <!-- Header Section with Logo -->
     <mj-section css-class="body-section">
       <mj-column>
-        <mj-image width="180px" src="https://placehold.co/180x60/166534/FFFFFF?text=LocalHarvest" alt="LocalHarvest Logo" />
+        <mj-image width="450px" src="https://i.imgur.com/M38Ks4y.png" alt="FrischeFarm Logo" />
       </mj-column>
     </mj-section>
 
@@ -201,7 +201,7 @@
         </mj-text>
         <mj-text align="center" color="#92400e">
           Questions about your order? We're here to help!<br/>
-          <a href="mailto:support@localharvest.com" style="color: #92400e; font-weight: bold;">support@localharvest.com</a> | 
+          <a href="mailto:freshfarm@dongho.kim" style="color: #92400e; font-weight: bold;">freshfarm@dongho.kim</a> | 
           <a href="tel:+49-89-123-4567" style="color: #92400e; font-weight: bold;">+49 (89) 123-4567</a>
         </mj-text>
       </mj-column>
@@ -210,13 +210,8 @@
     <!-- Footer Section -->
     <mj-section>
       <mj-column>
-        <mj-social font-size="15px" icon-size="24px" mode="horizontal">
-          <mj-social-element name="facebook" href="https://facebook.com/localharvest"></mj-social-element>
-          <mj-social-element name="instagram" href="https://instagram.com/localharvest"></mj-social-element>
-          <mj-social-element name="twitter" href="https://twitter.com/localharvest"></mj-social-element>
-        </mj-social>
         <mj-text align="center" font-size="12px" line-height="1.5" color="#555555">
-          <p>Thank you for supporting local farmers! <br /> © 2024 LocalHarvest Inc. All rights reserved.</p>
+          <p>Thank you for supporting local farmers! <br /> © 2025 FrischeFarm. All rights reserved.</p>
         </mj-text>
       </mj-column>
     </mj-section>

@@ -1,12 +1,10 @@
 import { Cart } from "../models/cart.model.js";
-import { CartItem } from "../models/cartItem.model.js";
 import { Order } from "../models/order.model.js";
-import { OrderItem } from "../models/orderItem.model.js";
 import { Product } from "../models/product.model.js";
 import { sendOrderConfirmationEmail } from './email.controller.js';
 import stripe from '../utils/stripe.js';
 import { Consumer } from '../models/consumer.model.js';
-
+import logger from "../utils/logger.js";
 
 // Get all orders (with pagination)
 export const getAllOrders = async (req, res) => {
@@ -17,7 +15,9 @@ export const getAllOrders = async (req, res) => {
 
 		const orders = await Order.find()
 			.populate([
-				{ path: "orderItems", populate: { path: "products.product" } },
+				{ path: "orderItems.products.product" },
+				{ path: "orderItems.farmer" },
+				{ path: "shippingAddress" },
 			])
 			.sort({ createdAt: -1 })
 			.skip(skip)
@@ -36,7 +36,7 @@ export const getAllOrders = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error("Error in getAllOrders:", error);
+		logger.error("Error in getAllOrders:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -50,7 +50,9 @@ export const getOrderById = async (req, res) => {
 		const { id } = req.params;
 
 		const order = await Order.findById(id).populate([
-			{ path: "orderItems", populate: { path: "products.product" } },
+			{ path: "orderItems.products.product" },
+			{ path: "orderItems.farmer" },
+			{ path: "shippingAddress" },
 		]);
 
 		if (!order) {
@@ -66,7 +68,7 @@ export const getOrderById = async (req, res) => {
 			order,
 		});
 	} catch (error) {
-		console.error("Error in getOrderById:", error);
+		logger.error("Error in getOrderById:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -104,7 +106,7 @@ export const updateOrderStatus = async (req, res) => {
 			order,
 		});
 	} catch (error) {
-		console.error("Error in updateOrderStatus:", error);
+		logger.error("Error in updateOrderStatus:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -149,7 +151,7 @@ export const updatePaymentStatus = async (req, res) => {
 			order,
 		});
 	} catch (error) {
-		console.error("Error in updatePaymentStatus:", error);
+		logger.error("Error in updatePaymentStatus:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -166,7 +168,9 @@ export const getOrdersByConsumer = async (req, res) => {
 
 		const orders = await Order.find({ consumer: req.userId })
 			.populate([
-				{ path: "orderItems", populate: { path: "products.product" } },
+				{ path: "orderItems.products.product" },
+				{ path: "orderItems.farmer" },
+				{ path: "shippingAddress" },
 			])
 			.sort({ createdAt: -1 })
 			.skip(skip)
@@ -185,7 +189,7 @@ export const getOrdersByConsumer = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error("Error in getOrdersByConsumer:", error);
+		logger.error("Error in getOrdersByConsumer:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -224,7 +228,7 @@ export const cancelOrder = async (req, res) => {
 			order,
 		});
 	} catch (error) {
-		console.error("Error in cancelOrder:", error);
+		logger.error("Error in cancelOrder:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -249,11 +253,7 @@ export const createOrderFromCart = async (req, res) => {
 			consumer: req.userId,
 			status: "active",
 		}).populate({
-			path: "items",
-			populate: [
-				{ path: "products.product" },
-				{ path: "farmer" }
-			],
+			path: "items.products.product items.farmer"
 		});
 
 		if (!cart || cart.items.length === 0) {
@@ -289,13 +289,24 @@ export const createOrderFromCart = async (req, res) => {
 		// Fetch payment method details from Stripe for snapshot
 		const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
 
-		// Create order first
+		// Create order and embed order items from cart
 		const order = new Order({
 			consumer: req.userId,
 			totalAmount: cart.totalAmount,
 			shippingAddress: shippingAddressId,
 			status: "pending",
 			paymentStatus: "pending",
+			orderItems: cart.items.map(cartItem => ({
+				farmer: cartItem.farmer?._id || cartItem.farmer,
+				products: cartItem.products.map(p => ({
+					product: p.product._id || p.product,
+					quantity: p.quantity,
+					unitPrice: p.unitPrice,
+					subtotal: p.subtotal,
+				})),
+				subtotal: cartItem.subtotal,
+				status: "pending",
+			})),
 			paymentDetails: {
 				transactionId: paymentIntent.id,
 				status: paymentIntent.status,
@@ -313,38 +324,19 @@ export const createOrderFromCart = async (req, res) => {
 			},
 		});
 
-		await order.save();
-
-		// Create order items for each CartItem (grouped by farmer)
-		const orderItems = [];
+		// Check all products for availability and update stock
 		for (const cartItem of cart.items) {
-			// Check all products for availability first
 			for (const p of cartItem.products) {
 				const dbProduct = await Product.findById(p.product._id || p.product);
 				if (!dbProduct || dbProduct.quantity < p.quantity) {
-					// If product is not available, delete the order and return error
-					await Order.findByIdAndDelete(order._id);
 					return res.status(400).json({
 						success: false,
 						message: `Insufficient quantity for product: ${dbProduct ? dbProduct.name : p.product._id || p.product}`,
 					});
 				}
 			}
-			// Create grouped order item for this farmer
-			const orderItem = new OrderItem({
-				order: order._id,
-				farmer: cartItem.farmer?._id || cartItem.farmer,
-				products: cartItem.products.map(p => ({
-					product: p.product._id || p.product,
-					quantity: p.quantity,
-					unitPrice: p.unitPrice,
-					subtotal: p.subtotal,
-				})),
-				status: "pending",
-			});
-			await orderItem.save();
-			orderItems.push(orderItem._id);
-			// Update product quantities
+		}
+		for (const cartItem of cart.items) {
 			for (const p of cartItem.products) {
 				const dbProduct = await Product.findById(p.product._id || p.product);
 				dbProduct.quantity -= p.quantity;
@@ -352,29 +344,24 @@ export const createOrderFromCart = async (req, res) => {
 			}
 		}
 
-		// Update order with order items
-		order.orderItems = orderItems;
 		await order.save();
 
-		// Delete cart and its items
-		await CartItem.deleteMany({ _id: { $in: cart.items.map(i => i._id) } });
+		// Delete cart
 		await Cart.findByIdAndDelete(cart._id);
 
 		// Populate order details (including product image, name, and farmName)
 		await order.populate([
 			{
-				path: "orderItems",
-				populate: {
-					path: "products.product",
-					select: "name imagePath measurement farmer",
-					populate: { path: "farmer", select: "farmName" }
-				}
+				path: "orderItems.products.product",
+				select: "name imagePath measurement farmer",
+				populate: { path: "farmer", select: "farmName" }
 			},
+			{ path: "orderItems.farmer" },
 			{ path: "shippingAddress" },
 		]);
 
 		// Add debug log before sending order confirmation email
-		console.log('DEBUG: Populated logged-in user order for email:', JSON.stringify(order, null, 2));
+		logger.info('DEBUG: Populated logged-in user order for email:', JSON.stringify(order, null, 2));
 		await sendOrderConfirmationEmail(
 			consumer.email,
 			consumer.name,
@@ -387,7 +374,7 @@ export const createOrderFromCart = async (req, res) => {
 			paymentIntentStatus: paymentIntent.status,
 		});
 	} catch (error) {
-		console.error("Error in createOrderFromCart:", error);
+		logger.error("Error in createOrderFromCart:", error);
 		res.status(500).json({
 			success: false,
 			message: error.message,
@@ -398,7 +385,7 @@ export const createOrderFromCart = async (req, res) => {
 // Get orders by farmer
 export const getOrdersByFarmer = async (req, res) => {
 	try {
-		console.log("Farmer ID from token:", req.userId);
+		logger.info("Farmer ID from token:", req.userId);
 
 		const page = Number.parseInt(req.query.page) || 1;
 		const limit = Number.parseInt(req.query.limit) || 10;
@@ -406,7 +393,7 @@ export const getOrdersByFarmer = async (req, res) => {
 
 		// First, find all products belonging to this farmer
 		const products = await Product.find({ farmer: req.userId });
-		console.log("Found products for farmer:", products.length);
+		logger.info("Found products for farmer:", products.length);
 
 		if (products.length === 0) {
 			return res.status(200).json({
@@ -422,13 +409,13 @@ export const getOrdersByFarmer = async (req, res) => {
 		}
 
 		const productIds = products.map((product) => product._id);
-		console.log("Product IDs:", productIds);
+		logger.info("Product IDs:", productIds);
 
 		// Find all order items that contain these products
 		const orderItems = await OrderItem.find({
 			product: { $in: productIds },
 		});
-		console.log("Found order items:", orderItems.length);
+		logger.info("Found order items:", orderItems.length);
 
 		if (orderItems.length === 0) {
 			return res.status(200).json({
@@ -451,7 +438,7 @@ export const getOrdersByFarmer = async (req, res) => {
 					.filter((id) => id !== undefined && id !== null),
 			),
 		];
-		console.log("Unique order IDs:", orderIds);
+		logger.info("Unique order IDs:", orderIds);
 
 		if (orderIds.length === 0) {
 			return res.status(200).json({
@@ -489,13 +476,13 @@ export const getOrdersByFarmer = async (req, res) => {
 			.skip(skip)
 			.limit(limit);
 
-		console.log("Found orders:", orders.length);
+		logger.info("Found orders:", orders.length);
 
 		// Filter out orders where all products are null (from the match condition)
 		const filteredOrders = orders.filter((order) =>
 			order.orderItems.some((item) => item.products.product !== null),
 		);
-		console.log("Filtered orders:", filteredOrders.length);
+		logger.info("Filtered orders:", filteredOrders.length);
 
 		const total = await Order.countDocuments({ _id: { $in: orderIds } });
 
@@ -510,7 +497,7 @@ export const getOrdersByFarmer = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error("Error in getOrdersByFarmer:", error);
+		logger.error("Error in getOrdersByFarmer:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -592,7 +579,7 @@ export const updateOrderItemStatus = async (req, res) => {
 			orderItem,
 		});
 	} catch (error) {
-		console.error("Error in updateOrderItemStatus:", error);
+		logger.error("Error in updateOrderItemStatus:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -604,18 +591,18 @@ export const updateOrderItemStatus = async (req, res) => {
 // Create guest order
 export const createGuestOrder = async (req, res) => {
 	try {
-		console.log("createGuestOrder request body:", req.body); // Log the incoming request body
+		logger.info("createGuestOrder request body:", req.body); // Log the incoming request body
 		const { cartItems, shippingAddress, contactInfo, notes, payment } = req.body;
 		if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
-			console.log("Missing or invalid cartItems");
+			logger.info("Missing or invalid cartItems");
 			return res.status(400).json({ success: false, message: "Cart items are required" });
 		}
 		if (!shippingAddress || !contactInfo) {
-			console.log("Missing shippingAddress or contactInfo");
+			logger.info("Missing shippingAddress or contactInfo");
 			return res.status(400).json({ success: false, message: "Shipping address and contact info are required" });
 		}
 		if (!contactInfo.name || !contactInfo.email) {
-			console.log("Missing guest name or email");
+			logger.info("Missing guest name or email");
 			return res.status(400).json({ success: false, message: "Name and email are required for guest checkout" });
 		}
 		// Check product availability and calculate total
@@ -654,11 +641,12 @@ export const createGuestOrder = async (req, res) => {
 		});
 		await order.save();
 		// Create order items, linking to the order
-		const orderItemIds = [];
 		for (const item of cartItems) {
 			const product = await Product.findById(item.productId);
-			const orderItem = new OrderItem({
-				order: order._id,
+			if (!product || product.quantity < item.quantity) {
+				return res.status(400).json({ success: false, message: `Insufficient quantity for product: ${product ? product.name : item.productId}` });
+			}
+			order.orderItems.push({
 				farmer: product.farmer,
 				products: [{
 					product: item.productId,
@@ -666,16 +654,13 @@ export const createGuestOrder = async (req, res) => {
 					unitPrice: item.unitPrice || product.price,
 					subtotal: (item.unitPrice || product.price) * item.quantity,
 				}],
+				subtotal: (item.unitPrice || product.price) * item.quantity,
 				status: "pending",
 			});
-			await orderItem.save();
-			orderItemIds.push(orderItem._id);
 			// Update product quantity
 			product.quantity -= item.quantity;
 			await product.save();
 		}
-		// Update order with order item IDs
-		order.orderItems = orderItemIds;
 		await order.save();
 		await order.populate([
 			{
@@ -690,14 +675,14 @@ export const createGuestOrder = async (req, res) => {
 		]);
 
 		// Add debug log before sending order confirmation email
-		console.log('DEBUG: Populated guest order for email:', JSON.stringify(order, null, 2));
+		logger.info('DEBUG: Populated guest order for email:', JSON.stringify(order, null, 2));
 		await sendOrderConfirmationEmail(
 			contactInfo.email,
 			contactInfo.name,
 			order
 		);
 
-		console.log("Guest order created successfully:", order);
+		logger.info("Guest order created successfully:", order);
 		res.status(201).json({
 			success: true,
 			message: "Order placed successfully as guest!",
@@ -705,10 +690,10 @@ export const createGuestOrder = async (req, res) => {
 		});
 	} catch (error) {
 		if (error.name === 'ValidationError' || error.code === 11000) {
-			console.error("Validation error in createGuestOrder:", error);
+			logger.error("Validation error in createGuestOrder:", error);
 			return res.status(400).json({ success: false, message: error.message, error });
 		}
-		console.error("Error in createGuestOrder:", error);
+		logger.error("Error in createGuestOrder:", error);
 		res.status(500).json({ success: false, message: "Server error" });
 	}
 };
@@ -727,7 +712,7 @@ export const guestPaymentIntent = async (req, res) => {
 		});
 		res.json({ clientSecret: paymentIntent.client_secret });
 	} catch (err) {
-		console.error('Error in guestPaymentIntent:', err);
+		logger.error('Error in guestPaymentIntent:', err);
 		res.status(500).json({ error: err.message });
 	}
 };

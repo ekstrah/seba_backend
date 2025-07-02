@@ -1,5 +1,6 @@
 import { Farmer } from "../models/farmer.model.js";
 import { Product } from "../models/product.model.js";
+import logger from "../utils/logger.js";
 
 export const oGetAll = async (req, res) => {
 	try {
@@ -18,7 +19,7 @@ export const oGetAll = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.log("error in oGetAll Product ", error);
+		logger.info("error in oGetAll Product ", error);
 		res.status(500).json({ success: false, message: "Server error" });
 	}
 };
@@ -77,7 +78,7 @@ export const oFind = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.log("error in find Product ", error);
+		logger.info("error in find Product ", error);
 		res.status(500).json({ success: false, message: "Server error" });
 	}
 };
@@ -138,7 +139,7 @@ export const createFarmerProduct = async (req, res) => {
 			product,
 		});
 	} catch (error) {
-		console.error("Error in createFarmerProduct:", error);
+		logger.error("Error in createFarmerProduct:", error);
 		res.status(400).json({
 			success: false,
 			message: error.message,
@@ -189,7 +190,7 @@ export const getMyProducts = async (req, res) => {
 			products,
 		});
 	} catch (error) {
-		console.error("Error in getMyProducts:", error);
+		logger.error("Error in getMyProducts:", error);
 		res.status(400).json({
 			success: false,
 			message: error.message,
@@ -274,7 +275,7 @@ export const getRelatedProducts = async (req, res) => {
 		.limit(8);
 		res.status(200).json({ success: true, products: relatedProducts });
 	} catch (error) {
-		console.error("Error in getRelatedProducts:", error);
+		logger.error("Error in getRelatedProducts:", error);
 		res.status(500).json({ success: false, message: "Server error" });
 	}
 };

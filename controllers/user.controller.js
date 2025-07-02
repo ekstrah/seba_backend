@@ -1,6 +1,7 @@
 import { User } from "../models/user.model.js";
 import { Consumer } from "../models/consumer.model.js";
 import stripe from "../utils/stripe.js";
+import logger from "../utils/logger.js";
 
 // Update user contact information
 export const updateContactInfo = async (req, res) => {
@@ -44,7 +45,7 @@ export const updateContactInfo = async (req, res) => {
 			user: updatedUser,
 		});
 	} catch (error) {
-		console.error("Error in updateContactInfo:", error);
+		logger.error("Error in updateContactInfo:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -74,7 +75,7 @@ export const getContactInfo = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error("Error in getContactInfo:", error);
+		logger.error("Error in getContactInfo:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",
@@ -94,7 +95,7 @@ export const listPaymentMethods = async (req, res) => {
 				message: "No Stripe customer found for this user."
 			});
 		}
-		console.log('Listing payment methods for consumer:', consumer._id, 'stripeCustomerId:', consumer.stripeCustomerId);
+		logger.info('Listing payment methods for consumer:', consumer._id, 'stripeCustomerId:', consumer.stripeCustomerId);
 		// List payment methods from Stripe
 		const paymentMethods = await stripe.paymentMethods.list({
 			customer: consumer.stripeCustomerId,
@@ -105,7 +106,7 @@ export const listPaymentMethods = async (req, res) => {
 			paymentMethods: paymentMethods.data,
 		});
 	} catch (error) {
-		console.error("Error in listPaymentMethods:", error);
+		logger.error("Error in listPaymentMethods:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",

@@ -22,7 +22,7 @@
     <!-- Header Section with Logo -->
     <mj-section css-class="body-section">
       <mj-column>
-        <mj-image width="180px" src="https://placehold.co/180x60/166534/FFFFFF?text=LocalHarvest" alt="LocalHarvest Logo" />
+        <mj-image width="450px" src="https://i.imgur.com/M38Ks4y.png" alt="FrischeFarm Logo" />
       </mj-column>
     </mj-section>
 
@@ -34,7 +34,7 @@
         </mj-text>
         <mj-text>
           <p>Hi {{name}},</p>
-          <p>Thanks for registering with LocalHarvest! To complete your account setup and ensure the security of your account, we just need you to confirm your email address.</p>
+          <p>Thanks for registering with FrischeFarm! To complete your account setup and ensure the security of your account, we just need you to confirm your email address.</p>
           <p>Please use the following verification code to activate your account:</p>
         </mj-text>
         <mj-text align="center" font-size="22px" font-weight="bold" color="#22c55e" padding="10px 0 20px 0">
@@ -52,7 +52,7 @@
         </mj-text>
         <mj-text padding-top="15px" font-size="14px" color="#555555">
           <p>This verification link is valid for {{expirationTime}}.</p>
-          <p>If you did not sign up for LocalHarvest, please ignore this email.</p>
+          <p>If you did not sign up for FrischeFarm, please ignore this email.</p>
         </mj-text>
       </mj-column>
     </mj-section>
@@ -60,13 +60,8 @@
     <!-- Footer Section -->
     <mj-section>
       <mj-column>
-        <mj-social font-size="15px" icon-size="24px" mode="horizontal">
-          <mj-social-element name="facebook" href="https://mjml.io/"></mj-social-element>
-          <mj-social-element name="instagram" href="https://mjml.io/"></mj-social-element>
-          <mj-social-element name="twitter" href="https://mjml.io/"></mj-social-element>
-        </mj-social>
         <mj-text align="center" font-size="12px" line-height="1.5" color="#555555">
-          <p>This email was sent to you because you registered an account with LocalHarvest. <br /> © 2024 LocalHarvest Inc. All rights reserved.</p>
+          <p>This email was sent to you because you registered an account with FrischeFarm. <br /> © 2025 FrischeFarm. All rights reserved.</p>
         </mj-text>
       </mj-column>
     </mj-section>

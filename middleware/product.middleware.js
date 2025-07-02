@@ -1,5 +1,6 @@
 import { Farmer } from "../models/farmer.model.js";
 import { Product } from "../models/product.model.js";
+import logger from "../utils/logger.js";
 
 export const verifyProductOwnership = async (req, res, next) => {
 	try {
@@ -28,7 +29,7 @@ export const verifyProductOwnership = async (req, res, next) => {
 		req.product = product;
 		next();
 	} catch (error) {
-		console.error("Error in verifyProductOwnership:", error);
+		logger.error("Error in verifyProductOwnership:", error);
 		res.status(500).json({
 			success: false,
 			message: "Server error",

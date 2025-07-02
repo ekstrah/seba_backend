@@ -50,7 +50,7 @@ router.patch("/:id/payment", authorize('updatePaymentStatus'), updatePaymentStat
 // Cancel order
 router.post("/:id/cancel", authorize('cancelOrder'), cancelOrder);
 
-// Update order item status
+// Update status of an embedded order item (orderItemId refers to embedded subdocument _id)
 router.patch("/items/:orderItemId/status", authorize('updateOrderItemStatus'), updateOrderItemStatus);
 
 export default router;
