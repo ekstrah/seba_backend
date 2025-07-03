@@ -361,7 +361,6 @@ export const createOrderFromCart = async (req, res) => {
 		]);
 
 		// Add debug log before sending order confirmation email
-		logger.info('DEBUG: Populated logged-in user order for email:', JSON.stringify(order, null, 2));
 		await sendOrderConfirmationEmail(
 			consumer.email,
 			consumer.name,
@@ -675,7 +674,6 @@ export const createGuestOrder = async (req, res) => {
 		]);
 
 		// Add debug log before sending order confirmation email
-		logger.info('DEBUG: Populated guest order for email:', JSON.stringify(order, null, 2));
 		await sendOrderConfirmationEmail(
 			contactInfo.email,
 			contactInfo.name,
