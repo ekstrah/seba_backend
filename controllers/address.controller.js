@@ -79,6 +79,14 @@ export const updateAddress = async (req, res) => {
 		const { addressId } = req.params;
 		const updateData = req.body;
 
+		// If setting this address as default, unset default for all others
+		if (updateData.isDefault) {
+			await Address.updateMany(
+				{ user: req.userId, _id: { $ne: addressId }, isDefault: true },
+				{ isDefault: false }
+			);
+		}
+
 		const address = await Address.findOneAndUpdate(
 			{ _id: addressId, user: req.userId },
 			updateData,
@@ -120,6 +128,7 @@ export const deleteAddress = async (req, res) => {
 			await consumer.save();
 		}
 
+		// Find the address to check if it is default
 		const address = await Address.findOneAndDelete({
 			_id: addressId,
 			user: req.userId,
@@ -130,6 +139,15 @@ export const deleteAddress = async (req, res) => {
 				success: false,
 				message: "Address not found",
 			});
+		}
+
+		// If the deleted address was default, set another as default if any exist
+		if (address.isDefault) {
+			const another = await Address.findOne({ user: req.userId });
+			if (another) {
+				another.isDefault = true;
+				await another.save();
+			}
 		}
 
 		res.json({

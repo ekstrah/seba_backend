@@ -18,14 +18,6 @@ const consumerSchema = new mongoose.Schema(
 				ref: "Address",
 			},
 		],
-		// wishlist: [{
-		//     type: mongoose.Schema.Types.ObjectId,
-		//     ref: 'Product'
-		// }],
-		// savedFarmers: [{
-		//     type: mongoose.Schema.Types.ObjectId,
-		//     ref: 'Farmer'
-		// }],
 		loyaltyPoints: {
 			type: Number,
 			default: 0,

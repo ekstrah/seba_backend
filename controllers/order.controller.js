@@ -353,8 +353,8 @@ export const createOrderFromCart = async (req, res) => {
 		await order.populate([
 			{
 				path: "orderItems.products.product",
-				select: "name imagePath measurement farmer",
-				populate: { path: "farmer", select: "farmName" }
+					select: "name imagePath measurement farmer",
+					populate: { path: "farmer", select: "farmName" }
 			},
 			{ path: "orderItems.farmer" },
 			{ path: "shippingAddress" },

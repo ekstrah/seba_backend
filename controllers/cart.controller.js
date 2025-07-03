@@ -213,7 +213,7 @@ export const updateCartItem = async (req, res) => {
 		productInCart.quantity = quantity;
 		productInCart.subtotal = productInCart.quantity * productInCart.unitPrice;
 		cartItem.subtotal = cartItem.products.reduce((sum, p) => sum + p.subtotal, 0);
-		await cart.save();
+			await cart.save();
 		await cart.populate({ path: "items.products.product items.farmer" });
 
 		res.status(200).json({
