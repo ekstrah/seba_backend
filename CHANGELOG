@@ -412,3 +412,17 @@ app.get('/api/images/:filename', async (req, res) => {
 - Swagger Port for Dev instead of Postman(?)
 - Think about how to manage profile images and product images
 - Sharp Integration for Image Uploads
+
+## [0.1.12.0] - 2025-07-07
+
+### Added
+- updateFarmerProfile endpoint
+- added permission to farmer
+
+### Changed
+
+
+### Fixed
+
+### Todo 
+- auth.getProfile endpoint is not implemented -> Does that affect checkAuth on frontent?

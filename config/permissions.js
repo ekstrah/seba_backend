@@ -51,6 +51,7 @@ export const permissions = {
   listPaymentMethods: ['consumer'],
   getFarmerDetails: ['admin', 'farmer', 'consumer', 'guest'],
   createSetupIntent: ['consumer'],
+  updateFarmerProfile: ['farmer'],
 
   // Review
   createReview: ['consumer'],

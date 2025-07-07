@@ -3,6 +3,7 @@ import {
 	getContactInfo,
 	updateContactInfo,
 	listPaymentMethods,
+	updateFarmerProfile
 } from "../controllers/user.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import { getAddresses } from "../controllers/address.controller.js";
@@ -27,6 +28,9 @@ router.get("/farmer/:id", authorize('getFarmerDetails'), async (req, res) => {
 
 // Apply authentication middleware to all other routes
 router.use(verifyToken);
+
+// Update farmer profile information
+router.put("/farmer/profile", authorize('updateFarmerProfile'), updateFarmerProfile)
 
 // Get user contact information
 router.get("/contact", authorize('getContactInfo'), getContactInfo);
