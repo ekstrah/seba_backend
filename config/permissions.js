@@ -40,10 +40,10 @@ export const permissions = {
   cancelOrder: ['consumer'],
 
   // Address
-  addAddress: ['consumer'],
+  addAddress: ['consumer', 'farmer'],
   deleteAddress: ['consumer'],
-  getAddresses: ['consumer'],
-  updateAddress: ['consumer'],
+  getAddresses: ['consumer', 'farmer'],
+  updateAddress: ['consumer', 'farmer'],
 
   // User
   getContactInfo: ['consumer'],

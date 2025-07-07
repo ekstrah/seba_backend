@@ -1,5 +1,7 @@
 import { Address } from "../models/address.model.js";
 import { Consumer } from "../models/consumer.model.js";
+import { Farmer } from "../models/farmer.model.js";
+import { User } from "../models/user.model.js";
 import logger from "../utils/logger.js";
 
 // Get all addresses for the current user
@@ -41,17 +43,27 @@ export const addAddress = async (req, res) => {
 
 		await address.save();
 
-		// Add address to consumer's deliveryAddresses
-		const consumer = await Consumer.findById(req.userId);
-		if (!consumer) {
+		// Add address to consumer's deliveryAddresses | farmer's farmLocation 
+		const user = await User.findById(req.userId);
+
+		if(!user) {
 			return res.status(404).json({
 				success: false,
-				message: "Consumer not found",
+				message: "User not found",
 			});
 		}
-
-		consumer.deliveryAddresses.push(address._id);
-		await consumer.save();
+		else {
+			if (user.role == "consumer") {
+				const consumer = await Consumer.findById(req.userId);
+				consumer.deliveryAddresses.push(address._id);
+				await consumer.save();
+			}
+			else if (user.role == "farmer") {
+				const farmer = await Farmer.findById(req.userId);
+				farmer.farmLocation = address._id;
+				await farmer.save();
+			}
+		}
 
 		res.status(201).json({
 			success: true,

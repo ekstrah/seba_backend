@@ -6,6 +6,7 @@ import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import stripe from '../utils/stripe.js';
 import logger from "../utils/logger.js";
+import { Address } from "../models/address.model.js";
 
 export const signup = async (req, res) => {
 	const { email, password, name, phone, role } = req.body;
@@ -51,9 +52,9 @@ export const signup = async (req, res) => {
 				stripeCustomerId: stripeCustomer.id,
 			});
 		} else if (role === "farmer") {
-			const { farmName, introduction, farmLocation } = req.body;
+			const { farmName, introduction } = req.body;
 
-			if (!farmName || !introduction || !farmLocation) {
+			if (!farmName || !introduction ) {
 				throw new Error("Farm details are required for farmer registration");
 			}
 
@@ -65,7 +66,7 @@ export const signup = async (req, res) => {
 				role,
 				farmName,
 				introduction,
-				farmLocation,
+				//farmLocation
 				verificationToken,
 				verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
 			});

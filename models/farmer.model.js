@@ -53,7 +53,7 @@ const farmerSchema = new mongoose.Schema(
 		farmLocation: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "Address",
-			required: true,
+			required: false,
 		},
 		farmingMethods: [
 			{
@@ -94,8 +94,9 @@ const farmerSchema = new mongoose.Schema(
 	},
 	{
 		timestamps: true,
+		discriminatorKey: "role"
 	},
 );
 
 // Create Farmer model as a discriminator of User
-export const Farmer = User.discriminator("Farmer", farmerSchema);
+export const Farmer = User.discriminator("farmer", farmerSchema);
