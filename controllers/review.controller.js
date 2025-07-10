@@ -138,7 +138,7 @@ export const getReviews = async (req, res) => {
 		const reviews = await Review.find({
 			type,
 			[type === "farmer" ? "farmer" : "product"]: id,
-		}).populate("reviewer", "name");
+		}).populate("reviewer", "name imagePath");
 
 		res.json(reviews);
 	} catch (error) {
