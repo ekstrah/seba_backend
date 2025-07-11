@@ -29,6 +29,12 @@ export const initializeTestReviews = async () => {
   let productReviewsAdded = 0;
   let farmerReviewsAdded = 0;
   try {
+    // Early exit if any review exists
+    const existingReview = await Review.findOne();
+    if (existingReview) {
+      logger.info('Test reviews already exist');
+      return;
+    }
     // Fetch all consumers (reviewers)
     const consumers = await Consumer.find().lean();
     if (consumers.length < 3) {

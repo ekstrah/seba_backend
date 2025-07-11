@@ -55,6 +55,25 @@ const userSchema = new mongoose.Schema(
 		resetPasswordExpiresAt: Date,
 		verificationToken: String,
 		verificationTokenExpiresAt: Date,
+		// For login attempt limiting
+		loginAttempts: {
+			type: Number,
+			default: 0,
+		},
+		lockUntil: {
+			type: Date,
+			default: null,
+		},
+		// Login history for auditing
+		loginHistory: [
+			{
+				timestamp: { type: Date, default: Date.now },
+				ip: String,
+				success: Boolean,
+				country: String,
+				city: String,
+			},
+		],
 	},
 	{
 		timestamps: true,

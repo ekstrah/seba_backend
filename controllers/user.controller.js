@@ -2,9 +2,16 @@ import { User } from "../models/user.model.js";
 import { Consumer } from "../models/consumer.model.js";
 import stripe from "../utils/stripe.js";
 import logger from "../utils/logger.js";
+import { validationResult } from "express-validator";
 
 // Update user contact information
 export const updateContactInfo = async (req, res) => {
+	// Handle validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ success: false, errors: errors.array() });
+	}
+
 	try {
 		const { name, phone, email } = req.body;
 		const userId = req.userId;

@@ -1,0 +1,36 @@
+<mjml>
+  <mj-body background-color="#f4f4f4">
+    <mj-section background-color="#ffffff" padding="20px">
+      <mj-column>
+        <mj-text font-size="20px" color="#15803D" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="bold">
+          New Login Detected
+        </mj-text>
+        <mj-divider border-color="#A0C878" border-width="2px" />
+        <mj-text font-size="16px" color="#333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+          Hello {{name}},
+        </mj-text>
+        <mj-text font-size="16px" color="#333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+          A new login to your account was detected:
+        </mj-text>
+        <mj-text font-size="16px" color="#333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+          <b>IP Address:</b> {{ip}}<br/>
+          <b>Location:</b> {{city}}, {{country}}<br/>
+          <b>Date & Time:</b> {{timestamp}}
+        </mj-text>
+        <mj-text font-size="16px" color="#333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+          If this was you, you can safely ignore this email. If you did not attempt to log in, please reset your password immediately or contact support.
+        </mj-text>
+        <mj-button background-color="#15803D" color="#FFFDF6" href="{{resetLink}}" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+          Reset Password
+        </mj-button>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#f4f4f4" padding="10px">
+      <mj-column>
+        <mj-text font-size="12px" color="#888888" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+          If you have any questions, please contact our support team.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml> 
