@@ -20,6 +20,7 @@ import { initializeTestCategories } from "./utils/testCategories.js";
 import { initializeTestProducts } from "./utils/testProducts.js";
 import { initializeTestReviews } from "./utils/testReviews.js";
 import { stripeWebhook } from "./controllers/stripeWebhook.controller.js";
+import "./models/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 8080;

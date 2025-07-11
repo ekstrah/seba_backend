@@ -99,4 +99,4 @@ const farmerSchema = new mongoose.Schema(
 );
 
 // Create Farmer model as a discriminator of User
-export const Farmer = User.discriminator("farmer", farmerSchema);
+export const Farmer = User.discriminator("Farmer", farmerSchema);
