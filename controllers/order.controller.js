@@ -18,6 +18,7 @@ export const getAllOrders = async (req, res) => {
 				{ path: "orderItems.products.product" },
 				{ path: "orderItems.farmer" },
 				{ path: "shippingAddress" },
+				{ path: 'billingAddress' },
 			])
 			.sort({ createdAt: -1 })
 			.skip(skip)
@@ -53,6 +54,7 @@ export const getOrderById = async (req, res) => {
 			{ path: "orderItems.products.product" },
 			{ path: "orderItems.farmer" },
 			{ path: "shippingAddress" },
+			{ path: 'billingAddress' },
 		]);
 
 		if (!order) {
@@ -98,6 +100,13 @@ export const updateOrderStatus = async (req, res) => {
 		}
 
 		order.status = status;
+		const now = new Date();
+		if (status === "pending" && !order.pendingAt) order.pendingAt = now;
+		if (status === "processing" && !order.processingAt) order.processingAt = now;
+		if (status === "shipped" && !order.shippedAt) order.shippedAt = now;
+		if (status === "delivered" && !order.deliveredAt) order.deliveredAt = now;
+		if (status === "cancelled" && !order.cancelledAt) order.cancelledAt = now;
+
 		await order.save();
 
 		res.status(200).json({
@@ -171,6 +180,7 @@ export const getOrdersByConsumer = async (req, res) => {
 				{ path: "orderItems.products.product" },
 				{ path: "orderItems.farmer" },
 				{ path: "shippingAddress" },
+				{ path: 'billingAddress' },
 			])
 			.sort({ createdAt: -1 })
 			.skip(skip)
@@ -239,7 +249,7 @@ export const cancelOrder = async (req, res) => {
 // Create order from cart
 export const createOrderFromCart = async (req, res) => {
 	try {
-		const { paymentMethodId, shippingAddressId } = req.body;
+		const { paymentMethodId, shippingAddressId, billingAddressId } = req.body;
 
 		if (!paymentMethodId || !shippingAddressId) {
 			return res.status(400).json({
@@ -290,12 +300,17 @@ export const createOrderFromCart = async (req, res) => {
 		const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
 
 		// Create order and embed order items from cart
+		const now = new Date();
+		const expectedDelivery = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 		const order = new Order({
 			consumer: req.userId,
 			totalAmount: cart.totalAmount,
 			shippingAddress: shippingAddressId,
+			billingAddress: billingAddressId || shippingAddressId,
 			status: "pending",
 			paymentStatus: "pending",
+			pendingAt: now,
+			expectedDeliveryAt: expectedDelivery,
 			orderItems: cart.items.map(cartItem => ({
 				farmer: cartItem.farmer?._id || cartItem.farmer,
 				products: cartItem.products.map(p => ({
@@ -358,6 +373,7 @@ export const createOrderFromCart = async (req, res) => {
 			},
 			{ path: "orderItems.farmer" },
 			{ path: "shippingAddress" },
+			{ path: 'billingAddress' },
 		]);
 
 		// Add debug log before sending order confirmation email
@@ -470,6 +486,7 @@ export const getOrdersByFarmer = async (req, res) => {
 					model: "User",
 				},
 				{ path: "shippingAddress" },
+				{ path: 'billingAddress' },
 			])
 			.sort({ createdAt: -1 })
 			.skip(skip)
@@ -627,15 +644,20 @@ export const createGuestOrder = async (req, res) => {
 		});
 		await guestAddress.save();
 		// Create order (no consumer field yet, and no orderItems yet)
+		const now = new Date();
+		const expectedDelivery = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 		const order = new Order({
 			orderItems: [],
 			totalAmount,
 			shippingAddress: guestAddress._id,
+			billingAddress: guestAddress._id,
 			contactInfo,
 			notes,
 			payment, // Store the payment object for demo
 			status: "pending",
 			paymentStatus: "pending",
+			pendingAt: now,
+			expectedDeliveryAt: expectedDelivery,
 			isGuest: true,
 		});
 		await order.save();
@@ -671,6 +693,7 @@ export const createGuestOrder = async (req, res) => {
 				}
 			},
 			{ path: "shippingAddress" },
+			{ path: 'billingAddress' },
 		]);
 
 		// Add debug log before sending order confirmation email

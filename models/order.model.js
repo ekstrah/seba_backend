@@ -72,6 +72,11 @@ const orderSchema = new mongoose.Schema(
 			ref: "Address",
 			required: true,
 		},
+		billingAddress: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Address",
+			required: false,
+		},
 		paymentStatus: {
 			type: String,
 			enum: [
@@ -85,6 +90,10 @@ const orderSchema = new mongoose.Schema(
 				"cancelled", // Payment was cancelled
 			],
 			default: "pending",
+		},
+		paymentMethod: {
+			type: String,
+			default: 'stripe',
 		},
 		paymentDetails: {
 			transactionId: String,
@@ -122,6 +131,12 @@ const orderSchema = new mongoose.Schema(
 		notes: {
 			type: String,
 		},
+		pendingAt: { type: Date },
+		processingAt: { type: Date },
+		shippedAt: { type: Date },
+		deliveredAt: { type: Date },
+		cancelledAt: { type: Date },
+		expectedDeliveryAt: { type: Date },
 	},
 	{ timestamps: true },
 );
@@ -135,6 +150,14 @@ orderSchema.pre("save", function (next) {
 	// Calculate totalAmount for the order (sum of item subtotals)
 	this.totalAmount = this.orderItems.reduce((sum, item) => sum + (item.subtotal || 0), 0);
 	next();
+});
+
+// Add this pre-save middleware after the schema definition
+orderSchema.pre("save", function (next) {
+  if (this.pendingAt && !this.expectedDeliveryAt) {
+    this.expectedDeliveryAt = new Date(this.pendingAt.getTime() + 3 * 24 * 60 * 60 * 1000);
+  }
+  next();
 });
 
 // Indexes for faster queries
