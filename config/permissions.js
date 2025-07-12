@@ -4,6 +4,7 @@ export const permissions = {
   // Product
   createProduct: ['admin', 'farmer'],
   deleteProduct: ['admin', 'farmer'],
+  updateProduct: ['admin', 'farmer'],
   getFarmerProducts: ['admin', 'farmer'],
   getMyProducts: ['admin', 'farmer'],
   getProductById: ['admin', 'farmer', 'consumer', 'guest'],

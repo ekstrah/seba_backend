@@ -8,6 +8,7 @@ import {
 	oFind,
 	oGetAll,
 	getRelatedProducts,
+	updateProduct,
 } from "../controllers/product.controller.js";
 import { verifyProductOwnership } from "../middleware/product.middleware.js";
 import { verifyToken } from "../middleware/verifyToken.js";
@@ -34,11 +35,11 @@ router.get("/categories", authorize('readAllCategories'), async (req, res) => {
 router.use(verifyToken);
 
 // Farmer routes
-router.post("/farmer", authorize('createProduct'), createFarmerProduct);
+router.post("/farmer/create-product", authorize('createProduct'), createFarmerProduct);
 router.get("/farmer/:farmerId", authorize('getFarmerProducts'), getFarmerProducts);
-router.get("/my-products", authorize('getMyProducts'), getMyProducts);
+router.get("/my-products", authorize('getMyProducts'), getMyProducts); // Not being used
 
 // Product ID specific routes (require product ownership verification)
 router.delete("/:productId", verifyProductOwnership, authorize('deleteProduct'), deleteProduct);
-
+router.put("/:productId", verifyProductOwnership, authorize('updateProduct'), updateProduct)
 export default router;

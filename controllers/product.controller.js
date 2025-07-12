@@ -203,7 +203,7 @@ export const deleteProduct = async (req, res) => {
 	try {
 		const userId = req.userId;
 		const productId = req.params.productId;
-
+		console.log(req)
 		// First verify the user is a farmer
 		const farmer = await Farmer.findOne({ _id: userId, role: "farmer" });
 		if (!farmer) {
@@ -279,3 +279,73 @@ export const getRelatedProducts = async (req, res) => {
 		res.status(500).json({ success: false, message: "Server error" });
 	}
 };
+
+export const updateProduct = async (req, res) => {
+	try {
+		const userId = req.userId;
+		const productId = req.params.productId;
+		console.log(req)
+		// Verify the user is a farmer
+		const farmer = await Farmer.findOne({ _id: userId, role: "farmer" });
+		if (!farmer) {
+			return res.status(403).json({
+				success: false,
+				message: "Only farmers can update products",
+			});
+		}
+
+		// Find the product and verify ownership
+		const product = await Product.findOne({ _id: productId, farmer: userId });
+		if (!product) {
+			return res.status(404).json({
+				success: false,
+				message: "Product not found or you don't have permission to update it",
+			});
+		}
+
+		const {
+			name,
+			description,
+			price,
+			stock,
+			imagePath,
+			isAvailable,
+			harvestDate,
+			expiryDate,
+			certType,
+			farmingMethod,
+			category,
+			measurement,
+		} = req.body;
+
+		if (name !== undefined) product.name = name;
+		if (description !== undefined) product.description = description;
+		if (price !== undefined) product.price = price;
+		if (stock !== undefined) product.stock = stock;
+		if (imagePath !== undefined) product.imagePath = imagePath;
+		if (isAvailable !== undefined) product.isAvailable = isAvailable;
+		if (harvestDate !== undefined) product.harvestDate = harvestDate;
+		if (expiryDate !== undefined) product.expiryDate = expiryDate;
+		if (certType !== undefined) product.certType = certType;
+		if (farmingMethod !== undefined) product.farmingMethod = farmingMethod;
+		if (category !== undefined) product.category = category;
+		if (measurement !== undefined) product.measurement = measurement;
+
+		await product.save();
+
+		await product.populate("category", "name");
+		await product.populate("reviews");
+
+		res.status(200).json({
+			success: true,
+			message: "Product updated successfully",
+			product,
+		});
+	} catch (error) {
+		logger.error("Error in updateProduct:", error);
+		res.status(400).json({
+			success: false,
+			message: error.message,
+		});
+	}
+}
