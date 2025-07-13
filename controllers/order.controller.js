@@ -390,100 +390,64 @@ export const getOrdersByFarmer = async (req, res) => {
 		const limit = Number.parseInt(req.query.limit) || 10;
 		const skip = (page - 1) * limit;
 
-		// First, find all products belonging to this farmer
-		const products = await Product.find({ farmer: req.userId });
-		logger.info("Found products for farmer:", products.length);
-
-		if (products.length === 0) {
-			return res.status(200).json({
-				success: true,
-				message: "No products found for this farmer",
-				orders: [],
-				pagination: {
-					total: 0,
-					page,
-					pages: 0,
-				},
-			});
-		}
-
-		const productIds = products.map((product) => product._id);
-		logger.info("Product IDs:", productIds);
-
-		// Find all order items that contain these products
-		const orderItems = await OrderItem.find({
-			product: { $in: productIds },
-		});
-		logger.info("Found order items:", orderItems.length);
-
-		if (orderItems.length === 0) {
-			return res.status(200).json({
-				success: true,
-				message: "No orders found for farmer's products",
-				orders: [],
-				pagination: {
-					total: 0,
-					page,
-					pages: 0,
-				},
-			});
-		}
-
-		// Get unique order IDs, filtering out any undefined values
-		const orderIds = [
-			...new Set(
-				orderItems
-					.map((item) => item.order)
-					.filter((id) => id !== undefined && id !== null),
-			),
-		];
-		logger.info("Unique order IDs:", orderIds);
-
-		if (orderIds.length === 0) {
-			return res.status(200).json({
-				success: true,
-				message: "No valid orders found for farmer's products",
-				orders: [],
-				pagination: {
-					total: 0,
-					page,
-					pages: 0,
-				},
-			});
-		}
-
-		// Get orders with pagination
-		const orders = await Order.find({ _id: { $in: orderIds } })
-			.populate([
-				{
-					path: "orderItems",
-					populate: [
-						{
-							path: "products.product",
-							match: { farmer: req.userId },
-						},
-					],
-				},
-				{
-					path: "consumer",
-					select: "name email phone role",
-					model: "User",
-				},
-				{ path: "shippingAddress" },
-			])
-			.sort({ createdAt: -1 })
-			.skip(skip)
-			.limit(limit);
+		// Find orders that contain order items belonging to this farmer
+		const orders = await Order.find({
+			"orderItems.farmer": req.userId
+		})
+		.populate([
+			{
+				path: "orderItems.products.product",
+				select: "name imagePath measurement price"
+			},
+			{
+				path: "consumer",
+				select: "name email phone role",
+				model: "User",
+			},
+			{ path: "shippingAddress" },
+		])
+		.sort({ createdAt: -1 })
+		.skip(skip)
+		.limit(limit);
 
 		logger.info("Found orders:", orders.length);
 
-		// Filter out orders where all products are null (from the match condition)
-		const filteredOrders = orders.filter((order) =>
-			order.orderItems.some((item) => item.products.product !== null),
-		);
-		logger.info("Filtered orders:", filteredOrders.length);
+		// Filter order items to only include those belonging to this farmer
+		orders.forEach(order => {
+			order.orderItems = order.orderItems.filter(item => 
+				item.farmer.toString() === req.userId
+			);
+		});
 
-		const total = await Order.countDocuments({ _id: { $in: orderIds } });
+		// Remove orders that have no order items after filtering
+		const filteredOrders = orders.filter(order => order.orderItems.length > 0);
+
+		// Get total count for pagination
+		const totalResult = await Order.aggregate([
+			{
+				$match: {
+					"orderItems.farmer": req.userId
+				}
+			},
+			{
+				$unwind: "$orderItems"
+			},
+			{
+				$match: {
+					"orderItems.farmer": req.userId
+				}
+			},
+			{
+				$group: {
+					_id: "$_id"
+				}
+			},
+			{
+				$count: "total"
+			}
+		]);
+
+		const total = totalResult.length > 0 ? totalResult[0].total : 0;
 
 		res.status(200).json({
 			success: true,
@@ -518,8 +482,20 @@ export const updateOrderItemStatus = async (req, res) => {
 			});
 		}
 
-		// Find the order item and verify it belongs to this farmer
-		const orderItem = await OrderItem.findById(orderItemId).populate("products.product");
+		// Find the order that contains this order item
+		const order = await Order.findOne({
+			"orderItems._id": orderItemId
+		}).populate("orderItems.products.product");
+
+		if (!order) {
+			return res.status(404).json({
+				success: false,
+				message: "Order item not found",
+			});
+		}
+
+		// Find the specific order item
+		const orderItem = order.orderItems.find(item => item._id.toString() === orderItemId);
 
 		if (!orderItem) {
 			return res.status(404).json({
@@ -529,7 +505,8 @@ export const updateOrderItemStatus = async (req, res) => {
 		}
 
 		// Verify the product belongs to this farmer
-		if (orderItem.products.product.farmer.toString() !== req.userId) {
+		const product = orderItem.products[0]?.product;
+		if (!product || product.farmer.toString() !== req.userId) {
 			return res.status(403).json({
 				success: false,
 				message: "You are not authorized to update this order item",
@@ -552,16 +529,12 @@ export const updateOrderItemStatus = async (req, res) => {
 			});
 		}
 
-		// Update the status
+		// Update the status of the specific order item
 		orderItem.status = status;
-		await orderItem.save();
+		await order.save();
 
 		// If all items in the order are delivered, update order status
 		if (status === "delivered") {
-			const order = await Order.findById(orderItem.order).populate(
-				"orderItems",
-			);
-
 			const allItemsDelivered = order.orderItems.every(
 				(item) => item.status === "delivered" || item.status === "cancelled",
 			);
