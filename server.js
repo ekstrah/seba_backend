@@ -25,6 +25,9 @@ import "./models/index.js";
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Register Stripe webhook route FIRST, before any body parsers or cookie parsers
+app.post("/api/payment-methods/webhook", express.raw({ type: "application/json" }), stripeWebhook);
+
 // CORS configuration
 const corsOptions = {
 	origin: (origin, callback) => {
@@ -64,9 +67,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("combined", { stream: logger.stream }));
-
-// Register Stripe webhook route directly BEFORE body parsers
-app.post("/api/payment-methods/webhook", express.raw({ type: "application/json" }), stripeWebhook);
 
 // Routes (excluding webhook, which is already registered)
 app.use("/api/auth", authRoutes);

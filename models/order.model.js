@@ -56,6 +56,10 @@ const orderSchema = new mongoose.Schema(
 			ref: "Consumer",
 			required: false,
 		},
+		guestEmail: {
+			type: String,
+			required: function() { return this.isGuest; },
+		},
 		orderItems: [orderItemSchema],
 		totalAmount: {
 			type: Number,
@@ -64,7 +68,7 @@ const orderSchema = new mongoose.Schema(
 		},
 		status: {
 			type: String,
-			enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
+			enum: ["pending", "processing", "shipped", "delivered", "cancelled", "refunded", "partially_refunded"],
 			default: "pending",
 		},
 		shippingAddress: {
@@ -165,6 +169,7 @@ orderSchema.index({ consumer: 1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ paymentStatus: 1 });
+orderSchema.index({ guestEmail: 1 });
 
 // Pre-save middleware to capture payment method snapshot
 orderSchema.pre("save", async function (next) {

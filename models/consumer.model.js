@@ -32,6 +32,10 @@ const consumerSchema = new mongoose.Schema(
 			default: null,
 			index: true,
 		},
+        lastSetupIntentId: {
+            type: String,
+            default: null,
+        },
 	},
 	{
 		timestamps: true,

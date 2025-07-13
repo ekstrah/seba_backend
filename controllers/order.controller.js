@@ -249,12 +249,12 @@ export const cancelOrder = async (req, res) => {
 // Create order from cart
 export const createOrderFromCart = async (req, res) => {
 	try {
-		const { paymentMethodId, shippingAddressId, billingAddressId } = req.body;
+		const { paymentMethodId, shippingAddressId, billingAddressId, paymentIntentId } = req.body;
 
-		if (!paymentMethodId || !shippingAddressId) {
+		if (!paymentMethodId || !shippingAddressId || !paymentIntentId) {
 			return res.status(400).json({
 				success: false,
-				message: "Payment method and shipping address are required",
+				message: "Payment method, shipping address, and paymentIntentId are required",
 			});
 		}
 
@@ -278,23 +278,6 @@ export const createOrderFromCart = async (req, res) => {
 		if (!consumer || !consumer.stripeCustomerId) {
 			return res.status(404).json({ success: false, message: "Consumer or Stripe customer not found" });
 		}
-
-		// Create a PaymentIntent with Stripe
-		const paymentIntent = await stripe.paymentIntents.create({
-			amount: Math.round(cart.totalAmount * 100), // amount in cents
-			currency: 'eur',
-			customer: consumer.stripeCustomerId,
-			payment_method: paymentMethodId,
-			off_session: false,
-			confirm: true,
-			automatic_payment_methods: {
-				enabled: true,
-				allow_redirects: 'never'
-			},
-			metadata: {
-				consumerId: consumer._id.toString(),
-			},
-		});
 
 		// Fetch payment method details from Stripe for snapshot
 		const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
@@ -323,8 +306,8 @@ export const createOrderFromCart = async (req, res) => {
 				status: "pending",
 			})),
 			paymentDetails: {
-				transactionId: paymentIntent.id,
-				status: paymentIntent.status,
+				transactionId: paymentIntentId,
+				status: 'pending',
 				paymentMethodSnapshot: paymentMethod && paymentMethod.card ? {
 					type: paymentMethod.type,
 					processor: 'stripe',
@@ -386,7 +369,7 @@ export const createOrderFromCart = async (req, res) => {
 			success: true,
 			message: "Order created and payment initiated",
 			order,
-			paymentIntentStatus: paymentIntent.status,
+			paymentIntentStatus: 'pending', // Indicate payment is pending
 		});
 	} catch (error) {
 		logger.error("Error in createOrderFromCart:", error);
@@ -651,6 +634,7 @@ export const createGuestOrder = async (req, res) => {
 			totalAmount,
 			shippingAddress: guestAddress._id,
 			billingAddress: guestAddress._id,
+            guestEmail: contactInfo.email,
 			contactInfo,
 			notes,
 			payment, // Store the payment object for demo
@@ -659,6 +643,10 @@ export const createGuestOrder = async (req, res) => {
 			pendingAt: now,
 			expectedDeliveryAt: expectedDelivery,
 			isGuest: true,
+			paymentDetails: {
+				transactionId: payment?.paymentIntentId || payment?.id,
+				status: 'pending',
+			},
 		});
 		await order.save();
 		// Create order items, linking to the order
@@ -736,4 +724,57 @@ export const guestPaymentIntent = async (req, res) => {
 		logger.error('Error in guestPaymentIntent:', err);
 		res.status(500).json({ error: err.message });
 	}
+};
+
+// Guest order tracking by order ID and email
+export const getGuestOrderByIdAndEmail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+    const order = await Order.findById(id).populate([
+      { path: "orderItems.products.product" },
+      { path: "orderItems.farmer" },
+      { path: "shippingAddress" },
+      { path: 'billingAddress' },
+    ]);
+    if (!order || !order.guestEmail) {
+      return res.status(404).json({ success: false, message: 'Order ID or email does not match any order' });
+    }
+    // Accept either contactInfo.email or guestEmail
+    const orderEmail = order.contactInfo?.email || order.guestEmail;
+    if (orderEmail !== email) {
+      return res.status(404).json({ success: false, message: 'Order ID or email does not match any order' });
+    }
+    res.status(200).json({ success: true, message: 'Order retrieved successfully', order });
+  } catch (error) {
+    logger.error('Error in getGuestOrderByIdAndEmail:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const createPaymentIntent = async (req, res) => {
+  try {
+    const { amount, currency = 'eur' } = req.body;
+    if (!amount || isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ error: 'Valid amount is required' });
+    }
+    // Attach Stripe customer ID for logged-in users
+    const consumer = await Consumer.findById(req.userId);
+    if (!consumer || !consumer.stripeCustomerId) {
+      return res.status(404).json({ error: 'Consumer or Stripe customer not found' });
+    }
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency,
+      customer: consumer.stripeCustomerId,
+      automatic_payment_methods: { enabled: true },
+    });
+    res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
+  } catch (err) {
+    logger.error('Error in createPaymentIntent:', err);
+    res.status(500).json({ error: err.message });
+  }
 };
