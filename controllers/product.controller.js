@@ -35,6 +35,7 @@ export const oFind = async (req, res) => {
 		category,
 		page = 1,
 		limit = 10,
+		farmer, // add this
 	} = req.query;
 	const query = {};
 	if (name) {
@@ -61,6 +62,10 @@ export const oFind = async (req, res) => {
 	if (req.query.rating) {
 		query["rating.average"] = { $gte: Number(req.query.rating) };
 	}
+    // Add farmer filter
+    if (farmer) {
+        query.farmer = farmer;
+    }
 	try {
 		const skip = (page - 1) * limit;
 

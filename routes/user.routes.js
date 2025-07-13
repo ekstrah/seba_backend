@@ -32,6 +32,20 @@ router.get("/farmer/:id", authorize('getFarmerDetails'), async (req, res) => {
 	}
 });
 
+// Public route to get 10 random farmers
+router.get("/farmers/random", async (req, res) => {
+  try {
+    const count = Number(req.query.count) || 10;
+    const farmers = await Farmer.aggregate([
+      { $match: { role: "farmer" } },
+      { $sample: { size: count } }
+    ]);
+    res.status(200).json({ success: true, farmers });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Apply authentication middleware to all other routes
 router.use(verifyToken);
 
