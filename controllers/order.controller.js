@@ -410,8 +410,6 @@ export const getOrdersByFarmer = async (req, res) => {
 		.skip(skip)
 		.limit(limit);
 
-		logger.info("Found orders:", orders.length);
-
 		// Filter order items to only include those belonging to this farmer
 		orders.forEach(order => {
 			order.orderItems = order.orderItems.filter(item => 
