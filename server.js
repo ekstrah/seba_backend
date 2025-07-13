@@ -19,6 +19,7 @@ import { initializeTestAccounts } from "./utils/testAccounts.js";
 import { initializeTestCategories } from "./utils/testCategories.js";
 import { initializeTestProducts } from "./utils/testProducts.js";
 import { initializeTestReviews } from "./utils/testReviews.js";
+import { initializeTestOrders } from "./utils/testOrders.js";
 import { stripeWebhook } from "./controllers/stripeWebhook.controller.js";
 
 const app = express();
@@ -103,6 +104,9 @@ if (process.env.NODE_ENV !== "test") {
 
 			await initializeTestReviews();
 			logger.info("Test reviews initialized successfully");
+
+			await initializeTestOrders();
+			logger.info("Test orders initialized successfully");
 
 			logger.info(`Server started at 0.0.0.0:${PORT}`);
 		} catch (error) {
