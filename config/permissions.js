@@ -45,6 +45,7 @@ export const permissions = {
   deleteAddress: ['consumer'],
   getAddresses: ['consumer', 'farmer'],
   updateAddress: ['consumer', 'farmer'],
+  getAddressById: ['admin', 'farmer'],
 
   // User
   getContactInfo: ['consumer'],

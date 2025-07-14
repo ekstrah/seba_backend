@@ -4,6 +4,7 @@ import {
 	deleteAddress,
 	getAddresses,
 	updateAddress,
+	getAddressById
 } from "../controllers/address.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import { authorize } from '../middleware/authorize.js';
@@ -15,6 +16,8 @@ router.use(verifyToken);
 
 // Get all addresses
 router.get("/", authorize('getAddresses'), getAddresses);
+router.get("/:id", authorize('getAddressById'), getAddressById);
+
 
 // Add new address
 router.post("/", authorize('addAddress'), addAddress);

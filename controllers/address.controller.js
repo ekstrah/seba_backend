@@ -14,6 +14,20 @@ export const getAddresses = async (req, res) => {
 	}
 };
 
+export const getAddressById = async (req, res) => {
+	try {
+		const { addressId } = req.params;
+		const address = await Address.findById(addressId);
+		if (!address) {
+			return res.status(404).json({ message: "Address not found" });
+		}
+		res.status(200).json({ address });
+	} catch (error) {
+		res.status(500).json({ message: "Failed to fetch address." });
+	}
+};
+
+
 // Add a new address
 export const addAddress = async (req, res) => {
 	try {
