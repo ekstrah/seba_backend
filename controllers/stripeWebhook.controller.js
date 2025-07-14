@@ -35,6 +35,18 @@ export const stripeWebhook = async (req, res) => {
       paymentStatus: o.paymentStatus
     })));
 
+    // --- DEBUG: Log all guest orders and their transaction IDs ---
+    const guestOrders = await Order.find({ guestEmail: { $exists: true, $ne: null } }).sort({ createdAt: -1 }).limit(10);
+    logger.info('Recent guest orders:', guestOrders.map(o => ({
+      id: o._id,
+      transactionId: o.paymentDetails?.transactionId,
+      paymentStatus: o.paymentStatus,
+      status: o.status,
+      guestEmail: o.guestEmail,
+      createdAt: o.createdAt
+    })));
+    // --- END DEBUG ---
+
     // Try to find the order by PaymentIntent ID
     const order = await Order.findOne({ 'paymentDetails.transactionId': paymentIntent.id });
     if (order) {
