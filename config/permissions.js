@@ -39,6 +39,7 @@ export const permissions = {
   createGuestOrder: ['guest'],
   guestPaymentIntent: ['guest'],
   cancelOrder: ['consumer'],
+  createPaymentIntent: ['consumer'],
 
   // Address
   addAddress: ['consumer', 'farmer'],

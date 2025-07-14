@@ -3,6 +3,7 @@ import { Consumer } from "../models/consumer.model.js";
 import { Farmer } from "../models/farmer.model.js";
 import { User } from "../models/user.model.js";
 import logger from "../utils/logger.js";
+import { validationResult } from "express-validator";
 
 // Get all addresses for the current user
 export const getAddresses = async (req, res) => {
@@ -30,6 +31,11 @@ export const getAddressById = async (req, res) => {
 
 // Add a new address
 export const addAddress = async (req, res) => {
+	// Handle validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ success: false, errors: errors.array() });
+	}
 	try {
 		const {
 			street,
@@ -101,6 +107,11 @@ export const addAddress = async (req, res) => {
 
 // Update an address
 export const updateAddress = async (req, res) => {
+	// Handle validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ success: false, errors: errors.array() });
+	}
 	try {
 		const { addressId } = req.params;
 		const updateData = req.body;

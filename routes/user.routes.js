@@ -10,6 +10,13 @@ import { getAddresses } from "../controllers/address.controller.js";
 import { createSetupIntent } from "../controllers/stripeWebhook.controller.js";
 import { Farmer } from "../models/farmer.model.js";
 import { authorize } from '../middleware/authorize.js';
+import { body } from "express-validator";
+
+const updateContactValidation = [
+  body("email").optional().isEmail().withMessage("Valid email is required"),
+  body("name").optional().notEmpty().withMessage("Name cannot be empty"),
+  body("phone").optional().notEmpty().withMessage("Phone cannot be empty"),
+];
 
 const router = express.Router();
 
@@ -26,6 +33,20 @@ router.get("/farmer/:id", authorize('getFarmerDetails'), async (req, res) => {
 	}
 });
 
+// Public route to get 10 random farmers
+router.get("/farmers/random", async (req, res) => {
+  try {
+    const count = Number(req.query.count) || 10;
+    const farmers = await Farmer.aggregate([
+      { $match: { role: "farmer" } },
+      { $sample: { size: count } }
+    ]);
+    res.status(200).json({ success: true, farmers });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Apply authentication middleware to all other routes
 router.use(verifyToken);
 
@@ -36,7 +57,7 @@ router.put("/farmer/profile", authorize('updateFarmerProfile'), updateFarmerProf
 router.get("/contact", authorize('getContactInfo'), getContactInfo);
 
 // Update user contact information
-router.put("/contact", authorize('updateContactInfo'), updateContactInfo);
+router.put("/contact", updateContactValidation, authorize('updateContactInfo'), updateContactInfo);
 
 // Get user addresses
 router.get("/addresses", authorize('getAddresses'), getAddresses);

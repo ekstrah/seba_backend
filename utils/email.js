@@ -75,3 +75,19 @@ export async function renderTemplate(templateName, data) {
     throw error;
   }
 }
+
+/**
+ * Send a new login alert email
+ * @param {Object} options
+ * @param {string} options.to - Recipient email address
+ * @param {string} options.name - User's name
+ * @param {string} options.ip - IP address
+ * @param {string} options.city - City
+ * @param {string} options.country - Country
+ * @param {string} options.timestamp - Date/time string
+ * @param {string} options.resetLink - Password reset link
+ */
+export async function sendNewLoginAlertEmail({ to, name, ip, city, country, timestamp, resetLink }) {
+  const html = await renderTemplate("newLoginAlert", { name, ip, city, country, timestamp, resetLink });
+  return sendEmail({ to, subject: "New Login Detected", html });
+}

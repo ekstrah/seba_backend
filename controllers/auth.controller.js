@@ -6,9 +6,17 @@ import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import stripe from '../utils/stripe.js';
 import logger from "../utils/logger.js";
-import { Address } from "../models/address.model.js";
+import { validationResult } from "express-validator";
+import geoip from 'geoip-lite';
+import { sendNewLoginAlertEmail } from "../utils/email.js";
 
 export const signup = async (req, res) => {
+	// Handle validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ success: false, errors: errors.array() });
+	}
+
 	const { email, password, name, phone, role } = req.body;
 
 	try {
@@ -130,24 +138,78 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+	// Handle validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ success: false, errors: errors.array() });
+	}
+
 	const { email, password } = req.body;
 	try {
 		const user = await User.findOne({ email });
+		const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress;
+		const geo = geoip.lookup(ip);
 		if (!user) {
+			// Log failed attempt for non-existent user (optional: skip for privacy)
 			return res
 				.status(400)
 				.json({ success: false, message: "Invalid credentials" });
 		}
+
+		// Email-based login attempt limiting
+		const now = Date.now();
+		if (user.lockUntil && user.lockUntil > now) {
+			user.loginHistory.push({ timestamp: new Date(), ip, success: false, country: geo?.country, city: geo?.city });
+			await user.save();
+			const wait = Math.ceil((user.lockUntil - now) / 60000);
+			return res.status(429).json({
+				success: false,
+				message: `Too many failed login attempts. Please try again after ${wait} minute(s).`,
+			});
+		}
+
 		const isPasswordValid = await bcryptjs.compare(password, user.password);
 		if (!isPasswordValid) {
-			return res
-				.status(400)
-				.json({ success: false, message: "Invalid credentials" });
+			user.loginAttempts = (user.loginAttempts || 0) + 1;
+			user.loginHistory.push({ timestamp: new Date(), ip, success: false, country: geo?.country, city: geo?.city });
+			if (user.loginAttempts >= 5) {
+				user.lockUntil = now + 5 * 60 * 1000; // 5 minutes
+				await user.save();
+				return res.status(429).json({
+					success: false,
+					message: "Too many failed login attempts. Please try again after 5 minutes.",
+				});
+			} else {
+				await user.save();
+				return res.status(400).json({ success: false, message: "Invalid credentials" });
+			}
 		}
-		const token = generateTokenAndSetCookie(res, user._id);
+
+		// Successful login: reset attempts
+		user.loginAttempts = 0;
+		user.lockUntil = null;
+
+		// Check if this is a new IP for this user
+		const isNewIp = !user.loginHistory.some(h => h.ip === ip && h.success);
+		user.loginHistory.push({ timestamp: new Date(), ip, success: true, country: geo?.country, city: geo?.city });
 
 		user.lastLogin = new Date();
 		await user.save();
+
+		if (isNewIp) {
+			const resetLink = `${process.env.CLIENT_URL}/reset-password`;
+			await sendNewLoginAlertEmail({
+				to: user.email,
+				name: user.name,
+				ip,
+				city: geo?.city || 'Unknown',
+				country: geo?.country || 'Unknown',
+				timestamp: new Date().toLocaleString(),
+				resetLink,
+			});
+		}
+
+		const token = generateTokenAndSetCookie(res, user._id);
 
 		res.status(200).json({
 			success: true,
@@ -169,6 +231,11 @@ export const logout = async (req, res) => {
 };
 
 export const forgotPassword = async (req, res) => {
+	// Handle validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ success: false, errors: errors.array() });
+	}
 	const { email } = req.body;
 	try {
 		const user = await User.findOne({ email });
@@ -197,6 +264,11 @@ export const forgotPassword = async (req, res) => {
 };
 
 export const resetPassword = async (req, res) => {
+	// Handle validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ success: false, errors: errors.array() });
+	}
 	try {
 		const { token } = req.params;
 		const { password } = req.body;

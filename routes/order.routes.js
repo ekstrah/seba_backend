@@ -11,6 +11,8 @@ import {
 	updatePaymentStatus,
 	createGuestOrder,
 	guestPaymentIntent,
+	getGuestOrderByIdAndEmail,
+	createPaymentIntent,
 } from "../controllers/order.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import { authorize } from '../middleware/authorize.js';
@@ -22,6 +24,12 @@ router.post("/guest/payment-intent", authorize('guestPaymentIntent'), guestPayme
 
 // Guest order creation for guest checkout (should be before verifyToken)
 router.post("/guest", authorize('createGuestOrder'), createGuestOrder);
+
+// Public endpoint for guest order tracking by order ID only (less secure)
+router.get("/guest/:id/track", getOrderById);
+
+// Public endpoint for guest order tracking by order ID and email
+router.get("/guest/:id/track-by-email", getGuestOrderByIdAndEmail);
 
 // Apply authentication middleware to all routes
 router.use(verifyToken);
@@ -52,5 +60,7 @@ router.post("/:id/cancel", authorize('cancelOrder'), cancelOrder);
 
 // Update status of an embedded order item (orderItemId refers to embedded subdocument _id)
 router.patch("/items/:orderItemId/status", authorize('updateOrderItemStatus'), updateOrderItemStatus);
+
+router.post("/payment-intent", authorize('createPaymentIntent'), createPaymentIntent);
 
 export default router;

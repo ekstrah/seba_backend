@@ -9,7 +9,7 @@ const reviewSchema = new mongoose.Schema(
 		},
 		farmer: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: "Farmer",
+			ref: "farmer",
 			required: function () {
 				return this.type === "farmer";
 			},

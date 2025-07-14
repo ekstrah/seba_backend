@@ -1,0 +1,9 @@
+import './user.model.js';
+import './farmer.model.js';
+import './product.model.js';
+import './cart.model.js';
+import './consumer.model.js';
+import './order.model.js';
+import './category.model.js';
+import './address.model.js';
+import './review.model.js'; 

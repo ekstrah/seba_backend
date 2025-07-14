@@ -47,7 +47,7 @@ const productSchema = new mongoose.Schema(
 		},
 		farmer: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: "Farmer",
+			ref: "farmer",
 			required: true,
 		},
 		category: {
