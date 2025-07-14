@@ -1,0 +1,201 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order Cancelled - LocalHarvest</mj-title>
+    <mj-preview>Your fresh produce order #LH-2024-001234 has been cancelled.</mj-preview>
+    <mj-font name="Lato" href="https://fonts.googleapis.com/css?family=Lato:300,400,500,700" />
+    <mj-style>
+      .body-section {
+        -webkit-box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.1);
+        -moz-box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.1);
+        box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.1);
+      }
+      .order-summary {
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 15px 0;
+      }
+      .order-item {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 15px 0;
+      }
+      .order-item:last-child {
+        border-bottom: none;
+      }
+      .total-row {
+        background-color: #fee2e2; /* Changed for cancellation theme */
+        font-weight: bold;
+        padding: 15px;
+        border-radius: 6px;
+      }
+      .status-badge {
+        background-color: #ef4444; /* Changed for cancellation theme - red */
+        color: #ffffff;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: bold;
+        display: inline-block;
+      }
+    </mj-style>
+    <mj-attributes>
+      <mj-all font-family="Lato, Helvetica, Arial, sans-serif" />
+      <mj-text font-size="16px" line-height="1.5" color="#333333" />
+      <mj-section background-color="#ffffff" padding="20px 0" />
+      <mj-column padding="0 25px" />
+      <mj-button background-color="#ef4444" color="#ffffff" font-size="18px" font-weight="bold" border-radius="8px" padding="15px 30px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#fef2f2"> <!-- Light red background for cancellation -->
+    <!-- Header Section with Logo -->
+    <mj-section css-class="body-section">
+      <mj-column>
+        <mj-image width="450px" src="https://i.imgur.com/M38Ks4y.png" alt="FrischeFarm Logo" />
+      </mj-column>
+    </mj-section>
+
+    <!-- Cancellation Hero Section -->
+    <mj-section css-class="body-section" padding="30px 0">
+      <mj-column>
+        <mj-text align="center" font-size="50px" padding="0 0 20px 0">
+          ❌
+        </mj-text>
+        <mj-text align="center" font-size="26px" font-weight="bold" color="#dc2626"> <!-- Darker red for heading -->
+          <h1>Order Cancelled</h1>
+        </mj-text>
+        <mj-text align="center" font-size="18px" color="#6b7280" padding="10px 0">
+          Your order has been successfully cancelled. We're sorry to see you go!
+        </mj-text>
+        <mj-raw>
+          <div style="text-align: center; margin: 20px 0;">
+            <span class="status-badge">Order #{{order._id}}</span>
+          </div>
+        </mj-raw>
+      </mj-column>
+    </mj-section>
+
+    <!-- Cancelled Order Details Section -->
+    <mj-section css-class="body-section">
+      <mj-column>
+        <mj-text font-size="20px" font-weight="bold" color="#dc2626" padding="0 0 15px 0">
+          Cancelled Order Details
+        </mj-text>
+        <mj-raw>
+          <div class="order-summary">
+            {{#order.orderItems}}
+            <div class="order-item" style="margin: auto;">
+              <table width="100%" style="border-collapse: collapse; margin-bottom: 8px; border-collapse: separate; border-spacing: 0 8px;">
+              <caption style="color: #dc2626; font-size: 18px; margin: auto;">{{farmName}}</caption>
+                <thead>
+                  <tr style="background: #fef2f2; color: #dc2626;"> <!-- Adjusted background for cancellation -->
+                    <th align="center" style="color: black; font-size: 15px;">Product</th>
+                    <th align="center" style="color: black; font-size: 15px;">Unit Price</th>
+                    <th align="center" style="color: black; font-size: 15px;">Quantity</th>
+                    <th align="center" style="color: black; font-size: 15px;">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#products}}
+                  <tr>
+                    <td align="center" style="color: black; font-size: 15px;">{{name}}</td>
+                    <td align="center" style="color: black; font-size: 15px;">{{unitPrice}} per {{measurement}}</td>
+                    <td align="center" style="color: black; font-size: 15px;">{{quantity}}</td>
+                    <td align="center" style="color: black; font-size: 15px;">{{subtotal}}</td>
+                  </tr>
+                  {{/products}}
+                  <tr>
+                    <td colspan="4"></td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" align="center"  style="color: black; font-weight: bold; font-size: 15px;">Subtotal: {{subtotal}}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            {{/order.orderItems}}
+          </div>
+        </mj-raw>
+      </mj-column>
+    </mj-section>
+
+    <!-- Order Summary Section (retained for reference of cancelled value) -->
+    <mj-section css-class="body-section" padding="0 0 20px 0">
+      <mj-column>
+        <mj-raw>
+          <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin: 15px 25px;">
+            <table width="100%" style="border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; color: #6b7280;">Original Shipping Cost:</td>
+                <td style="text-align: right; padding: 8px 0; font-weight: 500; color: #ef4444;">Free</td> <!-- Adjusted color -->
+              </tr>
+              <tr style="border-top: 2px solid #e5e7eb;">
+                <td style="padding: 15px 0 8px 0; font-size: 18px; font-weight: bold; color: #dc2626;">Original Total:</td> <!-- Adjusted color -->
+                <td style="text-align: right; padding: 15px 0 8px 0; font-size: 18px; font-weight: bold; color: #dc2626;">€{{order.totalAmount}}</td> <!-- Adjusted color -->
+              </tr>
+            </table>
+          </div>
+        </mj-raw>
+      </mj-column>
+    </mj-section>
+
+    <!-- Cancellation Information -->
+    <mj-section css-class="body-section">
+      <mj-column width="100%">
+        <mj-text font-size="18px" font-weight="bold" color="#dc2626" padding="0 0 10px 0">
+          ℹ️ Cancellation Details
+        </mj-text>
+        <mj-text font-size="14px" color="#6b7280">
+          Your order #{{order._id}} has been cancelled as per your request.
+        </mj-text>
+        <mj-text font-size="14px" color="#6b7280" padding="10px 0 0 0">
+          <strong>Refund Status:</strong><br/>
+          A refund of <strong>€{{order.totalAmount}}</strong> will be processed to your original payment method within 3-5 business days. You will receive a separate email once the refund is complete.
+        </mj-text>
+        <mj-text font-size="14px" color="#6b7280" padding="10px 0 0 0">
+          We hope to see you again soon!
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- What's Next Section (Adapted for Cancellation) -->
+    <mj-section css-class="body-section" background-color="#fef3c7"> <!-- Using a lighter warning color -->
+      <mj-column>
+        <mj-text font-size="18px" font-weight="bold" color="#92400e" padding="0 0 15px 0">
+          What happens next?
+        </mj-text>
+        <mj-text color="#92400e" font-size="14px">
+          <ol style="margin: 0; padding-left: 20px; line-height: 1.6;">
+            <li><strong>Refund Processing:</strong> Your refund is being processed to your original payment method.</li>
+            <li><strong>Confirmation Email:</strong> You will receive a separate email when the refund has been successfully issued.</li>
+            <li><strong>Account Update:</strong> Your order status in your LocalHarvest account will be updated to "Cancelled".</li>
+          </ol>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Need Help Section -->
+    <mj-section css-class="body-section" background-color="#fef3c7">
+      <mj-column>
+        <mj-text align="center" font-size="18px" font-weight="bold" color="#92400e" padding="0 0 10px 0">
+          Need Help?
+        </mj-text>
+        <mj-text align="center" color="#92400e">
+          Questions about your cancellation or refund? We're here to help!<br/>
+          <a href="mailto:freshfarm@dongho.kim" style="color: #92400e; font-weight: bold;">freshfarm@dongho.kim</a> |
+          <a href="tel:+49-89-123-4567" style="color: #92400e; font-weight: bold;">+49 (89) 123-4567</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer Section -->
+    <mj-section>
+      <mj-column>
+        <mj-text align="center" font-size="12px" line-height="1.5" color="#555555">
+          <p>Thank you for supporting local farmers! <br /> © 2025 FrischeFarm. All rights reserved.</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+  </mj-body>
+</mjml>
