@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import morgan from "morgan";
+import helmet from "helmet";
 
 import { connectDB } from "./db/connectDB.js";
 import addressRoutes from "./routes/address.routes.js";
@@ -25,6 +26,8 @@ import "./models/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+app.use(helmet());
 
 // Register Stripe webhook route FIRST, before any body parsers or cookie parsers
 app.post("/api/payment-methods/webhook", express.raw({ type: "application/json" }), stripeWebhook);
