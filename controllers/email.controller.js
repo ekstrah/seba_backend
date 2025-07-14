@@ -65,7 +65,42 @@ export const sendOrderConfirmationEmail = async (to, name, order) => {
   return sendEmail({
     from: process.env.SMTP_USER,
     to,
-    subject: 'Your Order Confirmation - FreshFarm',
+    subject: 'Your Order Confirmation - FrischeFarm',
     html,
   });
 }; 
+
+export const sendOrderCanclationEmail = async (to, name, order) => {
+  const plainOrder = JSON.parse(JSON.stringify(order));
+
+  if (plainOrder.orderItems) {
+    plainOrder.orderItems.forEach(orderItem => {
+      // Flatten farmer info from the first product
+      const firstProduct = orderItem.products[0];
+      orderItem.farmerName = firstProduct?.product?.farmer?.name || '';
+      orderItem.farmName = firstProduct?.product?.farmer?.farmName || '';
+      orderItem.products = orderItem.products.map(p => ({
+        name: p.product?.name,
+        imagePath: p.product?.imagePath,
+        measurement: p.product?.measurement,
+        quantity: p.quantity,
+        unitPrice: p.unitPrice !== undefined ? Number(p.unitPrice).toFixed(2) : undefined,
+        subtotal: p.subtotal !== undefined ? Number(p.subtotal).toFixed(2) : undefined
+      }));
+      if (orderItem.subtotal !== undefined) {
+        orderItem.subtotal = Number(orderItem.subtotal).toFixed(2);
+      }
+    });
+  }
+
+  if (plainOrder.totalAmount !== undefined) {
+    plainOrder.totalAmount = Number(plainOrder.totalAmount).toFixed(2);
+  }
+  const html = await renderTemplate('orderCancelEmail', { name, order: plainOrder});
+  return sendEmail({
+    from: process.env.SMTP_USER,
+    to,
+    subject: 'Your Order Cancellation Confirmation - FrischeFarm',
+    html,
+  });
+};
